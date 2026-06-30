@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#02040e"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>situationship</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,700&family=Syne:wght@800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:#02040e;font-family:'Inter',system-ui,sans-serif;color:#fff;-webkit-tap-highlight-color:transparent;}
+canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#app{position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:520px;margin:0 auto;}
+.messages{min-height:0;}
+
+/* ===== LOCK SCREEN ONBOARDING ===== */
+.lock-screen{flex:1;display:flex;flex-direction:column;padding:0;position:relative;overflow:hidden;}
+.lock-blobs{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.lock-blob{position:absolute;border-radius:50%;filter:blur(38px);opacity:0.55;mix-blend-mode:screen;}
+.lock-blob.b1{width:260px;height:260px;background:radial-gradient(circle,#7c5cbf,transparent 70%);top:-60px;left:-80px;animation:blobFloat1 22s ease-in-out infinite;}
+.lock-blob.b2{width:220px;height:220px;background:radial-gradient(circle,#c9a84c,transparent 70%);top:30%;right:-90px;animation:blobFloat2 26s ease-in-out infinite;}
+.lock-blob.b3{width:280px;height:280px;background:radial-gradient(circle,#4a7fa5,transparent 70%);bottom:-100px;left:10%;animation:blobFloat3 30s ease-in-out infinite;}
+.lock-blob.b4{width:180px;height:180px;background:radial-gradient(circle,#c0392b,transparent 70%);bottom:10%;right:-50px;animation:blobFloat1 24s ease-in-out infinite reverse;}
+.lock-blob.b5{width:160px;height:160px;background:radial-gradient(circle,#2e8b57,transparent 70%);top:55%;left:-60px;animation:blobFloat2 28s ease-in-out infinite reverse;}
+@keyframes blobFloat1{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(40px,30px) scale(1.15);}66%{transform:translate(-20px,50px) scale(0.9);}}
+@keyframes blobFloat2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-50px,-40px) scale(1.2);}}
+@keyframes blobFloat3{0%,100%{transform:translate(0,0) scale(1);}25%{transform:translate(30px,-30px) scale(0.95);}75%{transform:translate(-40px,20px) scale(1.1);}}
+.lock-twinkle{position:absolute;border-radius:50%;background:rgba(255,255,255,0.9);box-shadow:0 0 6px rgba(255,255,255,0.8);animation:twinkle 3.5s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0.15;}50%{opacity:0.9;}}
+.lock-time-wrap,.lock-card{position:relative;z-index:1;}
+.lock-time-wrap{text-align:center;padding:32px 20px 10px;flex-shrink:0;transition:padding 0.25s;}
+.lock-time-wrap.compact{padding:18px 20px 6px;}
+.lock-time{font-family:'Inter',sans-serif;font-weight:200;font-size:44px;letter-spacing:-2px;color:rgba(255,255,255,0.95);line-height:1;transition:font-size 0.25s;}
+.lock-time-wrap.compact .lock-time{font-size:30px;}
+.lock-date{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:0.5px;}
+.lock-divider{width:36px;height:1px;background:rgba(201,168,76,0.4);margin:10px auto;}
+.lock-card{flex:1;display:flex;flex-direction:column;padding:0 22px 20px;overflow-y:auto;min-height:0;}
+.lock-card::-webkit-scrollbar{width:0;}
+.lock-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;text-align:center;color:rgba(255,255,255,0.95);margin-bottom:4px;}
+.lock-sub{font-size:11px;text-align:center;color:rgba(255,255,255,0.4);margin-bottom:14px;line-height:1.5;padding:0 6px;}
+.lock-option{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(16px);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+.lock-option:active{transform:scale(0.97);background:rgba(201,168,76,0.08);}
+.lock-option.chosen{border-color:rgba(201,168,76,0.55);background:rgba(201,168,76,0.1);cursor:default;}
+.lock-option.chosen:active{transform:none;}
+.lock-option.chosen .lock-option-letter{color:#e6c873;}
+.lock-option.dimmed{opacity:0.4;padding:10px 16px;}
+.lock-option.dimmed .lock-option-title{font-size:12px;}
+.lock-option-letter{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:#c9a84c;margin-bottom:4px;}
+.lock-option-title{font-size:14px;font-weight:700;color:#eee;margin-bottom:3px;}
+.lock-option-sub{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4;}
+.lock-warning{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:8px;padding:9px;background:rgba(180,40,40,0.08);border:1px solid rgba(180,40,40,0.2);border-radius:10px;flex-shrink:0;}
+.lock-warning-text{font-size:10px;color:rgba(255,160,160,0.85);font-weight:600;letter-spacing:0.3px;}
+.lock-char-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;flex-shrink:0;}
+.lock-char-chip{flex:1 1 calc(50% - 7px);min-width:calc(50% - 7px);background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:9px 8px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.lock-char-chip.selected{border-color:#c9a84c;background:rgba(201,168,76,0.12);}
+.lock-char-chip-emoji{font-size:18px;margin-bottom:3px;}
+.lock-char-chip-name{font-size:10.5px;font-weight:700;color:#eee;}
+.lock-char-chip-blurb{font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;line-height:1.3;}
+.lock-confirm-btn{margin-top:12px;width:100%;background:linear-gradient(135deg,#c9a84c,#8a6020);border:none;border-radius:14px;padding:13px;color:#0a0a12;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;opacity:0.4;pointer-events:none;transition:opacity 0.2s;flex-shrink:0;}
+.lock-confirm-btn.active{opacity:1;pointer-events:auto;}
+.lock-back-link{text-align:center;margin-top:10px;font-size:11px;color:rgba(255,255,255,0.25);cursor:pointer;flex-shrink:0;padding-bottom:6px;}
+
+/* irrevocable confirm modal */
+.confirm-overlay{position:fixed;inset:0;background:rgba(2,4,14,0.88);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+.confirm-box{background:rgba(20,20,35,0.95);border:1px solid rgba(201,168,76,0.25);border-radius:18px;padding:26px 22px;max-width:340px;text-align:center;}
+.confirm-icon{font-size:32px;margin-bottom:10px;}
+.confirm-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#eee;margin-bottom:8px;}
+.confirm-sub{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:18px;}
+.confirm-btns{display:flex;gap:10px;}
+.confirm-btn-cancel{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;color:#aaa;font-size:13px;cursor:pointer;font-family:inherit;}
+.confirm-btn-go{flex:1;background:linear-gradient(135deg,#c9a84c,#8a6020);border:none;border-radius:12px;padding:12px;color:#0a0a12;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;}
+
+/* ===== HEADER ===== */
+.header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(4,6,20,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+.back-btn{background:none;border:none;color:#888;font-size:24px;cursor:pointer;padding:0 6px;line-height:1;}
+.char-avatar-init{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.15);}
+.header-info{flex:1;min-width:0;}
+.header-name{font-size:15px;font-weight:700;}
+.header-status{font-size:11px;color:#4a5a8a;}
+.header-taps{font-size:11px;background:rgba(0,0,0,0.4);padding:4px 9px;border-radius:10px;color:rgba(255,255,255,0.5);flex-shrink:0;}
+.header-taps.low{color:#ff8a8a;background:rgba(180,40,40,0.15);}
+
+/* ===== SCENE BANNER ===== */
+.scene-banner{padding:7px 14px;background:rgba(0,0,0,0.55);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;display:flex;gap:6px;align-items:flex-start;}
+.scene-banner-dot{color:#c9a84c;flex-shrink:0;margin-top:1px;}
+.scene-banner-text{font-size:11px;color:rgba(200,210,240,0.7);font-style:italic;line-height:1.5;}
+
+/* ===== MESSAGES ===== */
+.messages{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;}
+.messages::-webkit-scrollbar{width:0;}
+.msg-row{display:flex;width:100%;}
+.msg-row.right{justify-content:flex-end;}
+.msg-row.left{justify-content:flex-start;}
+.bubble{max-width:74%;padding:10px 14px;font-size:14px;line-height:1.5;word-break:break-word;}
+.bubble.them{background:rgba(18,26,65,0.85);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.12);border-radius:18px 18px 18px 4px;color:#dde;}
+.bubble.player{background:linear-gradient(135deg,rgba(255,107,157,0.5),rgba(219,68,128,0.5),rgba(255,140,180,0.5));background-size:200% 200%;border-radius:18px 18px 4px 18px;color:#fff;box-shadow:inset 0 1px 1px rgba(255,255,255,0.25),inset 0 -1px 6px rgba(150,20,70,0.15),0 2px 10px rgba(255,107,157,0.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.18);animation:fluidPinkShift 5s ease-in-out infinite;}
+@keyframes fluidPinkShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+.bubble.action{background:none;border:none;backdrop-filter:none;font-style:italic;color:rgba(255,255,255,0.38);font-size:12px;padding:2px 8px;border-radius:0;}
+.msg-time{font-size:10px;margin-top:4px;text-align:right;color:rgba(255,255,255,0.3);}
+.bubble.player .msg-time{color:rgba(255,255,255,0.5);}
+.typing-bubble{display:flex;gap:4px;align-items:center;padding:14px 16px;}
+.typing-bubble span{width:7px;height:7px;border-radius:50%;background:#2a3a6a;display:inline-block;animation:pulse 1.2s infinite ease-in-out;}
+.typing-bubble span:nth-child(2){animation-delay:.2s;}
+.typing-bubble span:nth-child(3){animation-delay:.4s;}
+
+/* ===== CHOICES ===== */
+.choices{padding:12px 14px 22px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;background:rgba(4,6,20,0.7);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.06);position:relative;z-index:5;overflow:visible;}
+.choices-label{font-size:9.5px;letter-spacing:1.2px;color:rgba(201,168,76,0.55);text-transform:uppercase;font-weight:700;margin-bottom:1px;padding-left:4px;}
+.choice-btn{display:flex;align-items:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.22);border-radius:999px;padding:13px 20px;color:#eef1ff;font-size:14px;cursor:pointer;text-align:left;font-family:inherit;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);width:100%;box-shadow:inset 0 1px 1px rgba(255,255,255,0.25),inset 0 -1px 6px rgba(0,0,0,0.18),0 4px 14px rgba(0,0,0,0.25);}
+.choice-btn-text{flex:1;}
+.choice-btn.filler{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:rgba(224,232,255,0.5);font-size:12.5px;padding:10px 18px;font-style:italic;box-shadow:none;}
+.choice-btn:active{background:rgba(201,168,76,0.25);border-color:rgba(201,168,76,0.55);transform:scale(0.97);}
+
+/* ===== HOME (CARD GRID) ===== */
+.home{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.home-header{padding:24px 20px 14px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:28px;line-height:1;}
+.logo .sit{font-family:'Cormorant Garamond',serif;font-weight:300;}
+.logo .ship{font-family:'Syne',sans-serif;font-weight:800;color:#c9a84c;font-style:italic;letter-spacing:-1px;}
+.home-tier-badge{font-size:10px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:#c9a84c;padding:5px 10px;border-radius:10px;font-weight:700;letter-spacing:0.3px;cursor:pointer;}
+.home-taps-bar{margin:0 20px 14px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.home-reset-row{padding:0 20px 10px;flex-shrink:0;}
+.home-reset-link{font-size:10px;color:rgba(255,255,255,0.22);cursor:pointer;text-align:right;}
+.home-taps-label{font-size:11px;color:rgba(255,255,255,0.5);}
+.home-taps-num{font-size:13px;font-weight:700;color:#c9a84c;}
+.card-grid{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px 30px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.card-grid.bounce-end{animation:scrollBounceEnd 0.45s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes scrollBounceEnd{0%{transform:translateY(0);}40%{transform:translateY(-10px);}100%{transform:translateY(0);}}
+.card-grid::-webkit-scrollbar{width:0;}
+.char-card{position:relative;border-radius:26px;overflow:hidden;aspect-ratio:1.05;cursor:pointer;border:1px solid rgba(255,255,255,0.22);transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:14px;backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);background:linear-gradient(160deg,rgba(255,107,157,0.22),rgba(120,40,90,0.28));box-shadow:inset 0 1px 1px rgba(255,255,255,0.3),inset 0 -1px 8px rgba(0,0,0,0.25),0 8px 24px rgba(0,0,0,0.35);text-align:center;}
+.char-card:active{transform:scale(0.96);}
+.char-card:active{transform:scale(0.96);}
+.char-card-emoji-wrap{position:absolute;top:12px;left:12px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.18);animation:cardBlobMorph 7s ease-in-out infinite, cardBlobDrift 9s ease-in-out infinite;}
+.char-card-emoji{font-size:21px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));}
+@keyframes cardBlobMorph{0%,100%{border-radius:60% 40% 55% 45%/50% 60% 40% 50%;}25%{border-radius:45% 55% 40% 60%/60% 40% 60% 40%;}50%{border-radius:55% 45% 60% 40%/40% 55% 45% 60%;}75%{border-radius:40% 60% 45% 55%/55% 45% 55% 45%;}}
+@keyframes cardBlobDrift{0%,100%{transform:translate(0,0);}50%{transform:translate(3px,-2px);}}
+.char-card-lock{position:absolute;top:14px;right:14px;font-size:13px;background:rgba(0,0,0,0.5);padding:4px 8px;border-radius:8px;color:rgba(255,255,255,0.6);}
+.char-card-online{position:absolute;top:16px;right:14px;width:9px;height:9px;border-radius:50%;background:#22c55e;border:2px solid rgba(0,0,0,0.4);box-shadow:0 0 8px #22c55e;}
+.char-card-name{font-size:17px;font-weight:800;position:relative;z-index:2;color:#ffffff;text-shadow:0 0 10px rgba(0,0,0,0.9),0 2px 4px rgba(0,0,0,0.95),0 0 20px rgba(255,220,160,0.4);letter-spacing:0.2px;}
+.char-card-role{font-size:9px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;position:relative;z-index:2;text-shadow:0 1px 4px rgba(0,0,0,0.6);}
+.char-card-tag{font-size:10px;color:rgba(255,255,255,0.55);margin-top:4px;position:relative;z-index:2;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,0.6);}
+.char-card-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0.85) 100%);}
+.char-card.locked{filter:grayscale(0.6) brightness(0.55);}
+
+/* ===== SCENE PICKER ===== */
+.scene-picker{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.scene-picker-list{flex:1;overflow-y:auto;padding:14px 16px 30px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;}
+.scene-picker-list::-webkit-scrollbar{width:0;}
+.scene-card{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;border-radius:999px;border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);background:rgba(255,255,255,0.06);box-shadow:inset 0 1px 1px rgba(255,255,255,0.25),inset 0 -1px 6px rgba(0,0,0,0.2),0 6px 18px rgba(0,0,0,0.3);}
+.scene-card.shimmer-in::before{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,var(--shimmer-color,rgba(120,180,255,0.35)) 50%,transparent 70%);background-size:250% 100%;background-position:150% 0;animation:shimmerSweep 1.8s ease forwards;pointer-events:none;border-radius:999px;}
+@keyframes shimmerSweep{0%{background-position:150% 0;opacity:1;}100%{background-position:-50% 0;opacity:0;}}
+.scene-card:active{transform:scale(0.97);}
+.scene-card-letter{width:38px;height:38px;border-radius:50%;background:rgba(201,168,76,0.16);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:17px;color:#c9a84c;flex-shrink:0;}
+.scene-card-info{flex:1;min-width:0;}
+.scene-card-title{font-size:14px;font-weight:600;color:#eeeeff;margin-bottom:3px;}
+.scene-card-sub{font-size:12px;color:rgba(255,255,255,0.4);}
+.scene-card-arrow{color:rgba(255,255,255,0.2);font-size:18px;flex-shrink:0;}
+.scene-card-meta{font-size:10px;color:rgba(201,168,76,0.6);margin-top:4px;}
+
+/* ===== ROCKET TRAIL ===== */
+.rocket-trail-bar{position:relative;height:40px;flex-shrink:0;overflow:hidden;border-top:1px solid rgba(255,255,255,0.05);background:rgba(2,4,14,0.45);}
+.rocket-unit{position:absolute;top:50%;display:flex;align-items:center;gap:8px;white-space:nowrap;animation:rocketFly 18s linear forwards;}
+.rocket-unit .rocket-emoji{font-size:15px;transform:scaleX(-1);filter:drop-shadow(0 0 6px rgba(255,200,150,0.6));flex-shrink:0;}
+.rocket-unit .rocket-quote{font-size:11px;font-style:italic;color:rgba(255,255,255,0.4);}
+@keyframes rocketFly{from{right:-85%;transform:translateY(-50%);}to{right:115%;transform:translateY(-50%);}}
+
+/* ===== WALL ===== */
+.wall-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;text-align:center;gap:12px;overflow-y:auto;}
+.wall-emoji{font-size:44px;}
+.wall-title{font-family:'Cormorant Garamond',serif;font-size:23px;color:rgba(255,255,255,0.9);line-height:1.3;}
+.wall-sub{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:6px;}
+.tier-card{width:100%;border-radius:16px;padding:16px 18px;text-align:left;cursor:pointer;font-family:inherit;border:1px solid;margin-bottom:4px;}
+.tier-name{font-size:14px;font-weight:800;margin-bottom:3px;}
+.tier-detail{font-size:11px;opacity:0.7;line-height:1.4;}
+.tier-price{font-size:18px;font-weight:800;float:right;}
+.tier-699{background:linear-gradient(135deg,rgba(40,20,90,0.9),rgba(20,10,55,0.9));border-color:rgba(180,100,255,0.3);color:#c9a0ff;}
+.tier-999{background:linear-gradient(135deg,rgba(70,45,10,0.9),rgba(40,25,5,0.9));border-color:rgba(201,168,76,0.3);color:#c9a84c;}
+.tier-1499{background:linear-gradient(135deg,rgba(90,10,30,0.9),rgba(50,5,15,0.9));border-color:rgba(255,90,130,0.35);color:#ff9ab3;}
+.wall-code-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;width:100%;font-family:inherit;margin-top:6px;}
+.code-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px 16px;color:#fff;font-size:13px;outline:none;letter-spacing:1px;font-family:monospace;margin-bottom:8px;}
+.unlock-btn{width:100%;background:linear-gradient(135deg,#7c5cbf,#4a7fa5);border:none;border-radius:12px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;}
+.err-text{font-size:12px;color:#ff6b6b;text-align:center;margin-bottom:8px;}
+.ghost-btn{background:none;border:none;color:rgba(255,255,255,0.2);font-size:12px;cursor:pointer;font-family:inherit;padding:6px;}
+.tier-char-picker{font-size:11px;color:rgba(255,255,255,0.5);margin:8px 0;text-align:left;width:100%;}
+.tier-char-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;width:100%;}
+.tier-char-chip{flex:1 1 calc(33% - 6px);background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:7px 4px;text-align:center;font-size:10px;cursor:pointer;}
+.tier-char-chip.selected{border-color:#c9a84c;background:rgba(201,168,76,0.15);}
+
+/* ===== ENDING ===== */
+.ending-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:12px;}
+.ending-title{font-family:'Cormorant Garamond',serif;font-size:24px;color:rgba(255,255,255,0.9);}
+.ending-sub{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.6;}
+.ending-btn{background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);border-radius:14px;padding:13px 24px;color:#c9a84c;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+@keyframes pulse{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-5px);opacity:1}}
+.idle-prompt{position:fixed;left:50%;bottom:calc(var(--choices-h, 220px) + 14px);transform:translateX(-50%) translateY(20px);background:rgba(201,168,76,0.92);color:#1a1206;font-size:13px;font-weight:700;padding:10px 20px;border-radius:999px;box-shadow:0 4px 20px rgba(201,168,76,0.4);z-index:300;cursor:pointer;animation:idleRise 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards, idleBob 2s ease-in-out 0.4s infinite;}
+@keyframes idleRise{from{opacity:0;transform:translateX(-50%) translateY(20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes idleBob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-6px);}}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-in{animation:msgIn 0.3s ease both;}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<div id="app"></div>
+<script>
+// ── GALAXY BACKGROUND ──────────────────────────────────────────────────────
+(function(){
+const c=document.getElementById('gc'),ctx=c.getContext('2d');
+let angle=0;
+const resize=()=>{c.width=innerWidth;c.height=innerHeight;};
+resize();addEventListener('resize',resize);
+const stars=Array.from({length:160},()=>({x:Math.random()*3000,y:Math.random()*3000,r:Math.random()*1.2+.2,a:Math.random()*.6+.2,ts:Math.random()*.01+.004,to:Math.random()*Math.PI*2}));
+const sparks=Array.from({length:50},()=>mk(true));
+function mk(r){return{x:Math.random()*c.width,y:r?Math.random()*c.height:-10,vy:Math.random()*.55+.2,vx:(Math.random()-.5)*.3,a:Math.random()*.45+.1,sz:Math.random()*1.2+.3,fade:Math.random()*.003+.001};}
+let shoots=[],lastS=0,t=0;
+let meteors=[],lastM=0;
+function mks(){return{x:Math.random()*c.width*.85,y:Math.random()*c.height*.4,len:90+Math.random()*110,angle:Math.PI/5+Math.random()*.4,speed:6+Math.random()*7,life:0,maxLife:48};}
+function mkMeteor(){return{x:Math.random()*c.width,y:-30,len:140+Math.random()*100,angle:Math.PI/3.4+Math.random()*.3,speed:3.5+Math.random()*2.5,life:0,maxLife:90,girth:2.2+Math.random()*1.3,tint:Math.random()<0.5?[255,210,160]:[210,225,255]};}
+(function draw(){
+t++;angle+=.0006;
+const W=c.width,H=c.height;
+ctx.clearRect(0,0,W,H);ctx.fillStyle='#02040e';ctx.fillRect(0,0,W,H);
+
+// ── slowly rotating spiral nebula/galaxy art ──────────────────────────────
+ctx.save();
+ctx.translate(W*0.5, H*0.38);
+ctx.rotate(angle);
+const galaxyR = Math.max(W,H)*0.62;
+// soft core glow
+const core = ctx.createRadialGradient(0,0,0,0,0,galaxyR*0.55);
+core.addColorStop(0,'rgba(255,238,200,0.55)');
+core.addColorStop(0.25,'rgba(255,200,170,0.30)');
+core.addColorStop(0.55,'rgba(220,140,190,0.16)');
+core.addColorStop(1,'rgba(20,20,60,0)');
+ctx.beginPath();ctx.arc(0,0,galaxyR*0.55,0,Math.PI*2);ctx.fillStyle=core;ctx.fill();
+// spiral arms as soft tapered arcs in alternating hues
+const armColors = ['rgba(120,180,255,0.10)','rgba(180,120,230,0.09)','rgba(255,150,190,0.08)','rgba(110,220,200,0.07)'];
+for(let arm=0; arm<4; arm++){
+  ctx.save();
+  ctx.rotate((Math.PI/2)*arm + Math.sin(t*0.0007+arm)*0.05);
+  ctx.beginPath();
+  for(let i=0;i<=60;i++){
+    const tt = i/60;
+    const r = galaxyR*0.08 + tt*galaxyR*0.95;
+    const th = tt*Math.PI*2.1;
+    const x = Math.cos(th)*r;
+    const y = Math.sin(th)*r*0.42;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.lineWidth = galaxyR*0.16;
+  ctx.strokeStyle = armColors[arm];
+  ctx.lineCap='round';
+  ctx.filter = 'blur(2px)';
+  ctx.stroke();
+  ctx.filter = 'none';
+  ctx.restore();
+}
+ctx.restore();
+
+const vg=ctx.createRadialGradient(W*.5,H*.5,W*.15,W*.5,H*.5,W*.85);
+vg.addColorStop(0,'rgba(2,4,14,.08)');vg.addColorStop(.5,'rgba(2,4,14,.32)');vg.addColorStop(1,'rgba(2,4,14,.8)');
+ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+stars.forEach(s=>{const a=s.a*(.5+.5*Math.sin(t*s.ts+s.to));ctx.beginPath();ctx.arc(s.x%W,s.y%H,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(215,228,255,${a})`;ctx.fill();});
+sparks.forEach((sp,i)=>{ctx.beginPath();ctx.arc(sp.x%W,sp.y%H,sp.sz,0,Math.PI*2);ctx.fillStyle=`rgba(195,218,255,${sp.a})`;ctx.fill();sp.x+=sp.vx;sp.y+=sp.vy;sp.a-=sp.fade;if(sp.a<=0||sp.y>H+10)sparks[i]=mk();});
+if(t-lastS>140+Math.random()*120){shoots.push(mks());lastS=t;}
+shoots=shoots.filter(s=>s.life<s.maxLife);
+shoots.forEach(ss=>{ss.life++;const pr=ss.life/ss.maxLife,al=pr<.3?pr/.3:1-(pr-.3)/.7;const ex=ss.x+Math.cos(ss.angle)*ss.speed*ss.life,ey=ss.y+Math.sin(ss.angle)*ss.speed*ss.life;const gr=ctx.createLinearGradient(ex-Math.cos(ss.angle)*ss.len,ey-Math.sin(ss.angle)*ss.len,ex,ey);gr.addColorStop(0,'transparent');gr.addColorStop(1,`rgba(225,242,255,${al*.9})`);ctx.beginPath();ctx.moveTo(ex-Math.cos(ss.angle)*ss.len,ey-Math.sin(ss.angle)*ss.len);ctx.lineTo(ex,ey);ctx.strokeStyle=gr;ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.arc(ex,ey,2,0,Math.PI*2);ctx.fillStyle=`rgba(245,250,255,${al})`;ctx.fill();});
+// occasional bigger, slower, brighter meteor with a warm/cool glowing trail and burn tint
+if(t-lastM>900+Math.random()*1100){meteors.push(mkMeteor());lastM=t;}
+meteors=meteors.filter(m=>m.life<m.maxLife);
+meteors.forEach(mt=>{
+  mt.life++;
+  const pr=mt.life/mt.maxLife, al=pr<.15?pr/.15:1-(pr-.15)/.85;
+  const ex=mt.x+Math.cos(mt.angle)*mt.speed*mt.life, ey=mt.y+Math.sin(mt.angle)*mt.speed*mt.life;
+  const tx=mt.x-Math.cos(mt.angle)*mt.len*0+ex-Math.cos(mt.angle)*mt.len, ty=ey-Math.sin(mt.angle)*mt.len;
+  const [r,g,b]=mt.tint;
+  const gr=ctx.createLinearGradient(tx,ty,ex,ey);
+  gr.addColorStop(0,'transparent');
+  gr.addColorStop(0.5,`rgba(${r},${g},${b},${al*0.35})`);
+  gr.addColorStop(1,`rgba(${r},${g},${b},${al*0.95})`);
+  ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(ex,ey);ctx.strokeStyle=gr;ctx.lineWidth=mt.girth;ctx.lineCap='round';ctx.stroke();
+  // glowing head
+  ctx.beginPath();ctx.arc(ex,ey,mt.girth+1.5,0,Math.PI*2);
+  const headGr=ctx.createRadialGradient(ex,ey,0,ex,ey,mt.girth+6);
+  headGr.addColorStop(0,`rgba(255,255,255,${al})`);
+  headGr.addColorStop(1,'transparent');
+  ctx.fillStyle=headGr;ctx.fill();
+});
+requestAnimationFrame(draw);
+})();
+})();
+
+// ── CHARACTER VOICE BANKS (for procedural filler generation) ───────────────
+// Each character has small-talk / banter / callback lines used to pad scenes
+// to 150+ messages around the hand-written key beats, in-voice.
+// ── PLAYER MESSAGE EMOJI SYSTEM ──────────────────────────────────────────────
+// A subset of player choices get a contextual emoji appended when sent, based
+// on simple sentiment cues in the label text, so the player's own voice reads
+// a little warmer/human rather than flatly typed. Not every message gets one —
+// roughly a quarter, weighted toward emotionally loaded lines.
+const EMOJI_RULES = [
+  { test: /sorry|apolog/i, options: ['🥺','😔'] },
+  { test: /forgot|forgot—|forget/i, options: ['😭','🥲'] },
+  { test: /silence|\*silence\*/i, options: [] }, // never decorate pure silence
+  { test: /love|miss you|matter to me|mean(t)? something/i, options: ['🥹','💛'] },
+  { test: /dramatic|theatrical|relentless/i, options: ['😏'] },
+  { test: /fair|deal|noted|okay$/i, options: ['🙂'] },
+  { test: /angry|upset|mad|furious/i, options: ['😬'] },
+  { test: /promise|i will|i won't|i'll/i, options: ['🤍'] },
+  { test: /\?$/, options: ['🤔'] },
+];
+function maybeDecorateChoice(label){
+  if(/\*.*\*/.test(label)) return label; // never decorate stage-direction style choices like *silence*
+  // skip decoration if the label already contains an emoji (avoid stacking, e.g. "I forgot 😭")
+  if(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(label)) return label;
+  for(const rule of EMOJI_RULES){
+    if(rule.test.test(label) && rule.options.length){
+      if(Math.random() < 0.55){
+        return label + ' ' + rand(rule.options);
+      }
+      return label;
+    }
+  }
+  // small baseline chance for any other line to get a soft emoji
+  if(Math.random() < 0.12){
+    return label + ' ' + rand(['🙂','😊','💭']);
+  }
+  return label;
+}
+
+const VOICE = {
+  celeste: {
+    fillerThem: [
+      "anyway", "*sips something expensive*", "you're lucky I even reply this fast",
+      "I have people for this you know. texting back. but I do it myself for you",
+      "don't get used to that", "*sends a photo of her view, says nothing*",
+      "the assistant keeps asking if I'm okay. I told her to mind her business",
+      "I redid my nails. they're the color of your jacket. don't read into it",
+      "I'm bored. entertain me", "say something interesting", "you're stalling",
+      "I can hear you thinking from here", "this is a lot of typing for nothing",
+      "hurry up", "I have a thing in twenty minutes", "don't waste my evening",
+      "I'm only half paying attention to you right now, the other half is the chandelier they're installing",
+      "you know I don't wait for people", "this is me waiting", "noted",
+      "fine", "I'll allow it", "for now", "continue", "go on then",
+      "I'm listening. barely.", "*long pause that means she's actually listening*",
+      "you're not as charming as you think you are. you're more charming, actually. don't tell anyone I said that",
+      "I had champagne for breakfast, don't lecture me", "the staff think I'm difficult. I am.",
+      "I bought a building today. small one. don't make it weird"
+    ],
+    fillerPlayer: [
+      "I'm here", "go on", "I'm listening", "okay", "tell me more",
+      "what happened", "and then?", "I didn't know that", "that's a lot",
+      "I believe you", "I'm not going anywhere", "take your time",
+      "say it however you want", "I'm not judging", "okay, continue",
+      "that tracks honestly", "of course you did", "classic you",
+      "I wouldn't expect anything less", "you're impossible", "I know",
+      "fair enough", "I hear you", "noted", "duly noted", "okay okay"
+    ]
+  },
+  riya: {
+    fillerThem: [
+      "*sends from a stairwell, three words at a time*", "give me a second, I'm scrubbing in",
+      "okay I'm out. what did I miss", "my resident asked why I was smiling at my phone. I lied",
+      "I have four minutes before the next consult", "don't ask me about my day. it was bad. next topic",
+      "I ate a granola bar standing up at 2pm. that's lunch now apparently",
+      "someone coded in bay 3. I'm fine. just tired.", "I smell like a hospital. ignore that",
+      "*typing while walking, expect typos*", "I haven't sat down in six hours",
+      "tell me something that isn't about blood", "give me something normal",
+      "I need five minutes of you not being complicated", "same. I need five minutes of anything",
+      "okay continue", "I'm here, go", "still here", "say it",
+      "I'm too tired to be patient right now so get to the point",
+      "this is the nicest part of my day, don't ruin it",
+      "I will fall asleep mid-sentence, don't take it personally",
+      "I haven't laughed today until just now", "you're better than caffeine. don't tell my attending that"
+    ],
+    fillerPlayer: [
+      "take your time", "I'm here when you're free", "no rush",
+      "go save someone, I'll wait", "I'm not going anywhere",
+      "tell me when you can", "I understand", "that sounds exhausting",
+      "you don't have to explain", "I'm proud of you for today",
+      "drink water", "did you eat today", "go to bed soon",
+      "I mean it", "okay", "noted", "I hear you", "that makes sense",
+      "you're allowed to be tired", "I've got you", "whenever you're ready"
+    ]
+  },
+  nova: {
+    fillerThem: [
+      "*sends from a green room, music bleeding through*", "soundcheck in ten, talk fast",
+      "my manager is staring at me typing right now", "I have 4 minutes before they need me on stage",
+      "this city blurs into the last one. I don't know what timezone I'm emotionally in",
+      "someone screamed my name from three blocks away today. normal Tuesday",
+      "I miss being anonymous. for like an hour. not longer than that",
+      "*typing from the back of a car, city lights in the window*",
+      "tell me something that has nothing to do with my career",
+      "I need five minutes of being a person and not a brand",
+      "okay I'm back. what did I miss", "still here? thought you'd get bored of me",
+      "the label wants me to post today. I don't want to. I'm telling you instead",
+      "don't tell anyone I admitted that", "you're the only normal conversation I have some days",
+      "I should go, they're calling me", "two more minutes", "okay continue, fast"
+    ],
+    fillerPlayer: [
+      "go kill it on stage, I'll be here", "no rush, I'm not going anywhere",
+      "you can just be a person with me", "I like normal-Nova best",
+      "take your two minutes", "I'm listening", "go on",
+      "that sounds like a lot to carry", "you don't have to perform for me",
+      "I mean it", "okay", "I hear you", "tell me when you're free",
+      "proud of you, for the record", "you're allowed to be tired of it"
+    ]
+  },
+  arjun: {
+    fillerThem: [
+      "*sends from the garden, it is quiet here*", "my mother is asking who I am texting. I did not answer.",
+      "the council meets again tomorrow. I would rather talk to you.",
+      "it is cold here tonight. the mountains do that.",
+      "I have a duty to attend in an hour. tell me something before then.",
+      "my brother teases me about my phone. he is not wrong to.",
+      "there is a ceremony I must prepare for. I am stalling instead.",
+      "*typing slowly, deliberately, as he does everything*",
+      "tell me something ordinary. I get enough of extraordinary.",
+      "I am required somewhere. give me a moment.",
+      "still here. continue.", "I am listening. truly.",
+      "my grandmother asks if you are well. I told her I would ask.",
+      "this is the part of my day I look forward to most. do not tell my advisors that.",
+      "go on. I am not going anywhere.", "say it plainly. I prefer plain things from you."
+    ],
+    fillerPlayer: [
+      "I'm here", "take the time you need", "go to your duty, I'll wait",
+      "tell your grandmother I said hello", "I like ordinary too, with you",
+      "I'm listening", "go on", "no rush at all", "I understand",
+      "that sounds like a lot of weight to carry", "you don't have to be extraordinary with me",
+      "I mean that", "okay", "noted", "whenever you're free"
+    ]
+  },
+  kisha: {
+    fillerThem: [
+      "...", "*read receipt, no reply for a while*", "anyway",
+      "I don't know why I said that", "forget I said that",
+      "*typing, stops, typing again*", "I'm not in a good headspace rn ngl",
+      "you still there", "say something", "don't go quiet on me",
+      "I hate when you do that", "I hate when I do that too honestly",
+      "this is weird. good weird. I don't know.", "I wasn't gonna text you tonight",
+      "and yet", "here we are", "don't make this a thing", "it's already a thing",
+      "I'm tired", "of what", "everything. nothing. you know",
+      "say less", "okay continue", "go on then", "fine. continue.",
+      "you're still the easiest person to talk to. I hate that about you"
+    ],
+    fillerPlayer: [
+      "I'm here", "talk to me", "I'm not going anywhere", "go on",
+      "you don't have to explain", "I get it", "take your time",
+      "I'm listening", "say whatever you need to", "okay",
+      "I hear you", "that's valid", "I mean it, I'm here",
+      "you can be quiet with me too, that's fine", "no pressure"
+    ]
+  }
+};
+
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function pickN(arr,n){
+  const pool=[...arr]; const out=[];
+  for(let i=0;i<n && pool.length;i++){
+    const idx=Math.floor(Math.random()*pool.length);
+    out.push(pool[idx]); pool.splice(idx,1);
+  }
+  return out;
+}
+
+// ── SCENE EXPANSION ENGINE ──────────────────────────────────────────────────
+// Takes a hand-written "beats" array (the real story) and pads it with
+// in-voice filler exchanges so each scene reaches 150+ total messages,
+// while preserving every beat's content and order untouched.
+function expandScene(charId, beats, targetMin){
+  targetMin = targetMin || 150;
+  const voice = VOICE[charId];
+  const out = [];
+  let count = 0;
+
+  beats.forEach((beat,bi) => {
+    // Never insert filler immediately before a real choices beat — that's the
+    // moment the player needs to see clearly, not bury it behind throwaway taps.
+    const nextIsRealChoice = !!beat.choices;
+    if(bi>0 && !nextIsRealChoice && Math.random()<0.85){
+      const fillerLen = 2+Math.floor(Math.random()*3); // 2-4 filler msgs
+      for(let f=0;f<fillerLen;f++){
+        if(f%2===0){
+          out.push({who:'them',msgs:[rand(voice.fillerThem)],filler:true});
+        } else {
+          out.push({autoChoice:true,label:rand(voice.fillerPlayer),filler:true});
+        }
+        count++;
+      }
+    }
+    out.push(beat);
+    count += (beat.msgs?beat.msgs.length:0) + (beat.choices?1:0);
+  });
+
+  // If still under target, append trailing filler — but never directly before
+  // a beat that is a real choices block or an ending, so it never masks the
+  // actual story moments.
+  let guard=0;
+  while(count < targetMin && guard<200){
+    const fillerLen = 2+Math.floor(Math.random()*3);
+    const block=[];
+    for(let f=0;f<fillerLen;f++){
+      if(f%2===0) block.push({who:'them',msgs:[rand(voice.fillerThem)],filler:true});
+      else block.push({autoChoice:true,label:rand(voice.fillerPlayer),filler:true});
+    }
+    // find a safe insertion point: right after a 'them' dialogue node that is
+    // itself not immediately followed by a real choices block
+    let insertAt = -1;
+    for(let attempt=0; attempt<30; attempt++){
+      const candidate = 1 + Math.floor(Math.random()*Math.max(1,out.length-2));
+      const before = out[candidate-1];
+      const after = out[candidate];
+      const beforeIsFillerOrDialogue = before && (before.filler || (before.who && !before.ending));
+      const afterIsRealChoiceOrEnding = after && ((after.choices && !after.filler) || after.ending);
+      if(beforeIsFillerOrDialogue && !afterIsRealChoiceOrEnding){
+        insertAt = candidate; break;
+      }
+    }
+    if(insertAt<0) insertAt = Math.max(1, out.length-3);
+    out.splice(insertAt,0,...block);
+    count += fillerLen;
+    guard++;
+  }
+
+  return out;
+}
+
+// Convert the expanded array (with autoChoice markers) into the engine's flow format:
+// {who,msgs} steps and {choices:[...]} steps, with autoChoice becoming a single-button choice.
+function compileFlow(expanded){
+  const flow=[];
+  let idCounter=0;
+  function nid(){ idCounter++; return 'n'+idCounter; }
+
+  for(let i=0;i<expanded.length;i++){
+    const step = expanded[i];
+    if(step.autoChoice){
+      const id = nid();
+      flow.push({id, choices:[{label:step.label, next:'__NEXT__'}]});
+    } else if(step.who && step.msgs){
+      const id = nid();
+      const node = {id, who:step.who, msgs:step.msgs};
+      if(step.ending) node.ending = true;
+      flow.push(node);
+    } else if(step.choices){
+      const id = nid();
+      flow.push({id, choices:step.choices});
+    }
+  }
+
+  // Wire up next pointers: autoChoice nodes point to the very next node's id;
+  // hand-written choices already specify their own 'next' ids matching beat ids we set below.
+  for(let i=0;i<flow.length;i++){
+    const node=flow[i];
+    if(node.choices){
+      node.choices.forEach(ch=>{
+        if(ch.next==='__NEXT__'){
+          ch.next = flow[i+1] ? flow[i+1].id : null;
+        }
+      });
+    }
+  }
+  return flow;
+}
+
+// Hand-written beats reference each other by symbolic ids (a2, a3, etc) for branches.
+// We need beats with explicit ids preserved through expansion. We tag beat objects
+// with their original id before expansion so compileFlow can use it instead of generating one,
+// and rewrite 'next' targets that match original beat ids to the compiled id of that beat.
+function buildScene(charId, rawBeats, targetMin){
+  // tag pass-through: rawBeats elements may already carry id fields (from authored content)
+  const expanded = expandScene(charId, rawBeats, targetMin);
+  const flow=[];
+  let counter=0;
+  const idMap={}; // original authored id -> compiled id
+
+  function nid(){counter++; return 'g'+counter;}
+
+  expanded.forEach(step=>{
+    const cid = nid();
+    if(step.id) idMap[step.id]=cid;
+    if(step.autoChoice){
+      flow.push({_cid:cid, choices:[{label:step.label, next:'__NEXT__', filler:true}], filler:true});
+    } else if(step.who && step.msgs){
+      const node={_cid:cid, who:step.who, msgs:step.msgs};
+      if(step.ending) node.ending=true;
+      if(step.filler) node.filler=true;
+      flow.push(node);
+    } else if(step.choices){
+      flow.push({_cid:cid, choices:step.choices.map(c=>({label:c.label, next:c.next}))});
+    }
+  });
+
+  // resolve next pointers
+  for(let i=0;i<flow.length;i++){
+    const node=flow[i];
+    if(node.choices){
+      node.choices.forEach(ch=>{
+        if(ch.next==='__NEXT__'){
+          ch.next = flow[i+1] ? flow[i+1]._cid : null;
+        } else if(idMap[ch.next]){
+          ch.next = idMap[ch.next];
+        } else {
+          // dangling authored reference (e.g. 'ending') not found as a tagged id yet (forward ref) -
+          // try resolving after full pass below
+          ch.__pending = ch.next;
+        }
+      });
+    }
+  }
+  // second pass for forward references
+  for(let i=0;i<flow.length;i++){
+    const node=flow[i];
+    if(node.choices){
+      node.choices.forEach(ch=>{
+        if(ch.__pending){
+          if(idMap[ch.__pending]) ch.next = idMap[ch.__pending];
+          delete ch.__pending;
+        }
+      });
+    }
+  }
+
+  // finalize: rename _cid -> id
+  flow.forEach(n=>{ n.id = n._cid; delete n._cid; });
+  return flow;
+}
+
+// ── AUTHORED SCENE CONTENT (key beats per scene; expanded at runtime) ──────
+// Beat objects use {id, who, msgs} for dialogue lines and {id, choices:[{label,next}]}
+// for branch points. 'next' refers to another beat's id, or 'ending' for terminal beats.
+
+const RAW_SCENES = {
+celeste: [
+  {id:'a',letter:'A',title:'You missed the Chanel unboxing',sub:'Six people were invited. Six.',setup:'She texted you first. That already means something.',
+   beats:[
+    {who:'them',msgs:['so you really didn\'t come','*reads it*','47 people. 47.']},
+    {choices:[{label:'I forgot 😭',next:'a2'},{label:'Something came up',next:'a3'},{label:'I didn\'t want to',next:'a4'}]},
+    {id:'a2',who:'them',msgs:['*read receipt*','you forgot.','an event with my name on the invitation, and you forgot.','the canapés were good at least']},
+    {id:'a2c',choices:[{label:'Did you eat mine too',next:'a5'},{label:'I\'ll make it up to you',next:'a6'},{label:'Are you actually upset',next:'a7'}]},
+    {id:'a3',who:'them',msgs:['something came up','that\'s the excuse you\'re going with','not "I forgot," not "I\'m sorry" — "something came up," like I\'m a dentist appointment you rescheduled']},
+    {id:'a3c',choices:[{label:'It\'s the truth',next:'a8'},{label:'I know it\'s weak',next:'a9'},{label:'Don\'t do that',next:'a10'}]},
+    {id:'a4',who:'them',msgs:['*read receipt*','*typing*','okay','you didn\'t want to. at least that\'s honest.','I wasn\'t expecting honest from you tonight']},
+    {id:'a4c',choices:[{label:'That\'s all you have to say',next:'a11'},{label:'Aren\'t you going to ask why',next:'a12'},{label:'*silence*',next:'a13'}]},
+    {id:'a11',who:'them',msgs:['what else is there to say','you told me the truth, I heard it, we\'re done unless you want to add something']},
+    {id:'a11c',choices:[{label:'I want to add something',next:'a17'},{label:'There\'s nothing else',next:'a19'},{label:'Just that I\'m sorry',next:'a17'}]},
+    {id:'a12',who:'them',msgs:['I wasn\'t going to ask','I was going to let you sit in it','but since you brought it up — why']},
+    {id:'a12c',choices:[{label:'I got scared of how it would look showing up alone',next:'a20'},{label:'I didn\'t think I belonged there',next:'a21'},{label:'I genuinely don\'t have a good reason',next:'a22'}]},
+    {id:'a13',who:'them',msgs:['the silence is its own answer','I\'m going to sit with that for a second']},
+    {id:'a13c',choices:[{label:'Say something, please',next:'a19'},{label:'I don\'t know what to say either',next:'a19'},{label:'I\'m here. I\'m listening now.',next:'a17'}]},
+    {id:'a5',who:'them',msgs:['obviously','someone had to','*sends photo of an empty champagne glass*','this was also yours']},
+    {id:'a5c',choices:[{label:'You\'re so dramatic',next:'a14'},{label:'I owe you a drink then',next:'a15'},{label:'*silence*',next:'a16'}]},
+    {id:'a16',who:'them',msgs:['nothing to say to that, huh','I\'ll take the silence as agreement that you owe me something']},
+    {id:'a16c',choices:[{label:'I do owe you something',next:'a39'},{label:'I wasn\'t agreeing, I was thinking',next:'a36'},{label:'Fine, name it',next:'a39'}]},
+    {id:'a6',who:'them',msgs:['you don\'t have to make it up to me','*pause*','I just noticed you weren\'t there']},
+    {id:'a6c',choices:[{label:'Is that different from being upset',next:'a17'},{label:'I\'ll notice next time',next:'a18'},{label:'Celeste.',next:'a19'}]},
+    {id:'a7',who:'them',msgs:['no','*immediately*','maybe a little']},
+    {id:'a7c',choices:[{label:'A little',next:'a20'},{label:'That\'s fair',next:'a21'},{label:'Tell me',next:'a22'}]},
+    {id:'a8',who:'them',msgs:['it\'s the truth','fine. I\'ll believe you.','what came up that was more important than six people I personally vetted']},
+    {id:'a8c',choices:[{label:'I can\'t really explain it',next:'a23'},{label:'It doesn\'t matter now',next:'a24'},{label:'You vetted them?',next:'a25'}]},
+    {id:'a9',who:'them',msgs:['you know it\'s weak and you said it anyway','that\'s almost worse','at least commit to a lie properly']},
+    {id:'a9c',choices:[{label:'Noted. I\'ll lie better next time.',next:'a26'},{label:'I wasn\'t lying',next:'a23'},{label:'*silence*',next:'a27'}]},
+    {id:'a27',who:'them',msgs:['that\'s the third time you\'ve gone quiet on me tonight','I\'m keeping count']},
+    {id:'a27c',choices:[{label:'I noticed you counting',next:'a36'},{label:'I don\'t know what to say',next:'a37'},{label:'I\'m here, I just needed a second',next:'a38'}]},
+    {id:'a10',who:'them',msgs:['don\'t do what','*pause*','I\'m not doing anything. I\'m asking a question you don\'t want to answer.']},
+    {id:'a10c',choices:[{label:'You\'re doing the face',next:'a32'},{label:'The tone',next:'a33'},{label:'*silence*',next:'a27'}]},
+    {id:'a14',who:'them',msgs:['I prefer theatrical','dramatic is for people who care too much','I just notice things. Like a chair with your name on it that stayed empty.']},
+    {id:'a14c',choices:[{label:'Do you notice everything',next:'a36'},{label:'Like what',next:'a37'},{label:'Like when people don\'t show up',next:'a38'}]},
+    {id:'a15',who:'them',msgs:['you do owe me a drink','*pause*','among other things. starting with an explanation.']},
+    {id:'a15c',choices:[{label:'Other things',next:'a39'},{label:'I\'ll explain over the drink',next:'a39'},{label:'What other things',next:'a39'}]},
+    {id:'a19',who:'them',msgs:['don\'t say my name like that','*pause*','like you already know what I\'m feeling. you weren\'t even in the room.']},
+    {id:'a19c',choices:[{label:'I know you well enough',next:'a35'},{label:'*silence*',next:'a35'},{label:'I\'m trying to understand',next:'a35b'}]},
+    {id:'a17',who:'them',msgs:['yes','being upset means I want an apology','noticing means I just kept track of the chair you didn\'t sit in']},
+    {id:'a17c',choices:[{label:'I\'m sorry. Genuinely.',next:'a40'},{label:'I noticed too — I noticed I wasn\'t there',next:'a41'},{label:'Which one is this',next:'a41'}]},
+    {id:'a18',who:'them',msgs:['next time implies there will be a next time','careful with promises like that around me']},
+    {id:'a18c',choices:[{label:'I mean it',next:'a40'},{label:'There will be',next:'a41'},{label:'*silence*',next:'a41'}]},
+    {id:'a20',who:'them',msgs:['a little','that\'s the most honest thing you\'ve said tonight','say the rest']},
+    {id:'a20c',choices:[{label:'I should have texted you',next:'a42'},{label:'I got caught up and lost track of time',next:'a43'},{label:'I didn\'t think it mattered this much to you',next:'a44'}]},
+    {id:'a21',who:'them',msgs:['fair doesn\'t un-empty a chair','but I appreciate you not arguing with me about how I feel']},
+    {id:'a21c',choices:[{label:'I wouldn\'t do that',next:'a42'},{label:'I\'m learning',next:'a43'},{label:'*silence*',next:'a44'}]},
+    {id:'a22',who:'them',msgs:['the launch was beautiful','and I kept checking the door','that\'s the part I\'m not going to forgive quickly']},
+    {id:'a22c',choices:[{label:'I\'m sorry you were checking the door',next:'a42'},{label:'How beautiful was it',next:'a43'},{label:'I wish I\'d seen you check it',next:'a44'}]},
+    {id:'a23',who:'them',msgs:['then don\'t explain it','just don\'t let it happen again','that\'s the whole ask']},
+    {id:'a23c',choices:[{label:'Deal',next:'a40'},{label:'I won\'t',next:'a41'},{label:'I can do that',next:'a41'}]},
+    {id:'a24',who:'them',msgs:['it matters to me whether it matters to you','so it does matter now']},
+    {id:'a24c',choices:[{label:'It matters',next:'a40'},{label:'You\'re right',next:'a41'},{label:'*silence*',next:'a41'}]},
+    {id:'a25',who:'them',msgs:['I curate everything, including who\'s in a room with me','you were supposed to be one of the easy ones']},
+    {id:'a25c',choices:[{label:'I\'ll be easy next time',next:'a40'},{label:'I don\'t want to be easy, I want to be there',next:'a41'},{label:'*silence*',next:'a41'}]},
+    {id:'a26',who:'them',msgs:['*laugh react, almost involuntary*','don\'t make me laugh, I\'m supposed to be furious']},
+    {id:'a26c',choices:[{label:'Stay furious then',next:'a36'},{label:'Sorry, not sorry',next:'a37'},{label:'I like making you laugh',next:'a38'}]},
+    {id:'a32',who:'them',msgs:['what face','*pause*','the one where you think you\'ve already won the argument']},
+    {id:'a32c',choices:[{label:'Have I?',next:'a36'},{label:'I haven\'t won anything',next:'a37'},{label:'You can\'t see my face right now',next:'a38'}]},
+    {id:'a33',who:'them',msgs:['the tone where you sound calm so I look unreasonable','I see what you\'re doing']},
+    {id:'a33c',choices:[{label:'Is it working',next:'a36'},{label:'I\'m not doing that',next:'a37'},{label:'You\'re not unreasonable',next:'a38'}]},
+    {id:'a35',who:'them',msgs:['*read receipt*','*long pause*','I looked for you','at the party','*immediately* not in a weird way']},
+    {id:'a35c',choices:[{label:'Twice is a weird way',next:'ending'},{label:'What would you have said',next:'a45'},{label:'You looked for me',next:'a46'}]},
+    {id:'a35b',who:'them',msgs:['there\'s nothing to understand','I just kept turning toward the door','that\'s all']},
+    {id:'a35bc',choices:[{label:'I wish I\'d walked through it',next:'a45'},{label:'I\'m sorry I missed that',next:'a46'},{label:'Celeste.',next:'ending'}]},
+    {id:'a36',who:'them',msgs:['I notice everything that costs me something to ignore','an empty chair costs me something']},
+    {id:'a36c',choices:[{label:'I won\'t cost you again',next:'a45'},{label:'I didn\'t realize I cost anything',next:'a46'},{label:'That\'s the nicest thing you\'ve said tonight',next:'ending'}]},
+    {id:'a37',who:'them',msgs:['I remember most things about you','*pause*','don\'t make it weird']},
+    {id:'a37c',choices:[{label:'Too late',next:'a45'},{label:'Why do you remember',next:'a46'},{label:'I\'m not making it weird you are',next:'ending'}]},
+    {id:'a38',who:'them',msgs:['when people don\'t show up I notice exactly how long I waited','to the minute']},
+    {id:'a38c',choices:[{label:'How long did you wait',next:'a45'},{label:'I\'m sorry I made you wait',next:'a46'},{label:'I would have waited for you too',next:'ending'}]},
+    {id:'a39',who:'them',msgs:['an apology that costs more than words','jewelry doesn\'t count, I have plenty','your actual attention counts']},
+    {id:'a39c',choices:[{label:'You have my attention now',next:'a45'},{label:'What would count then',next:'a46'},{label:'I\'ll give you more than words',next:'ending'}]},
+    {id:'a40',who:'them',msgs:['*laugh react*','I\'ll text you the list','*doesn\'t*']},
+    {id:'a40c',choices:[{label:'I\'m still waiting on that list',next:'a45'},{label:'You never will, will you',next:'a46'},{label:'Send it whenever',next:'ending'}]},
+    {id:'a41',who:'them',msgs:['*read*','yes','*pause*','among other things']},
+    {id:'a41c',choices:[{label:'What other things',next:'a45'},{label:'I want to know all of it',next:'a46'},{label:'*silence*',next:'ending'}]},
+    {id:'a42',who:'them',msgs:['you should have','a text takes four seconds','I would have forgiven four seconds']},
+    {id:'a42c',choices:[{label:'I\'ll text first next time, I promise',next:'a45'},{label:'Four seconds is a low bar and I still missed it',next:'a46'},{label:'Noted',next:'ending'}]},
+    {id:'a43',who:'them',msgs:['caught up in what, exactly','I want the real version, not the polite one']},
+    {id:'a43c',choices:[{label:'I lost track of time being nervous about tonight',next:'a45'},{label:'Honestly, I don\'t have a good answer',next:'a46'},{label:'The real version is I was scared to show up',next:'ending'}]},
+    {id:'a44',who:'them',msgs:['now you know','so what are you going to do about that']},
+    {id:'a44c',choices:[{label:'Show up properly next time',next:'a45'},{label:'Make it up to you tonight',next:'a46'},{label:'Whatever you ask',next:'ending'}]},
+    {id:'a45',who:'them',msgs:['*pause*','okay','that\'s a start']},
+    {id:'a46',who:'them',msgs:['*read receipt*','*long pause*','I believe you. for now.']},
+    {id:'ending',who:'them',msgs:['*three dots appear. disappear. appear again.*','I wanted you there.','not at the party.','just. there.','*sent at 2:14am*'],ending:true}
+   ]},
+  {id:'b',letter:'B',title:'You didn\'t show for Louis Vuitton lunch',sub:'Private dining. Reserved three weeks ago.',setup:'The table is still set. She sat there alone.',
+   beats:[
+    {who:'them',msgs:['the table is still set if you were curious','they even made your preferred sparkling water']},
+    {choices:[{label:'I completely forgot—',next:'b2'},{label:'I was in a meeting—',next:'b3'},{label:'Something came up',next:'b4'}]},
+    {id:'b2',who:'them',msgs:['you forgot.','fascinating.','I didn\'t forget your birthday. Or your favorite order. Or that you hate cilantro.']},
+    {id:'b2c',choices:[{label:'I\'m sorry',next:'b5'},{label:'You remember all that?',next:'b6'},{label:'*silence*',next:'b6'}]},
+    {id:'b3',who:'them',msgs:['a meeting.','more important than a private dining room at LV.','I\'m noting this.']},
+    {id:'b3c',choices:[{label:'It won\'t happen again',next:'b5'},{label:'I\'m sorry',next:'b5'},{label:'Can I explain',next:'b5'}]},
+    {id:'b4',who:'them',msgs:['something came up.','right.']},
+    {id:'b4c',choices:[{label:'You\'re angry',next:'b6'},{label:'I know. I\'m sorry.',next:'b5'},{label:'Say something else',next:'b6'}]},
+    {id:'b5',who:'them',msgs:['I know you are.','that\'s the only reason we\'re still texting.']},
+    {id:'b5c',choices:[{label:'When can I see you',next:'ending'},{label:'Let me make it right',next:'ending'},{label:'Celeste.',next:'ending'}]},
+    {id:'b6',who:'them',msgs:['I remember most things.','about you specifically.','don\'t ask me why.']},
+    {id:'b6c',choices:[{label:'I\'m asking',next:'ending'},{label:'Why.',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*three dots*','there\'s a place in Marais.','no reservations usually. but I know the chef.','*pause*','Thursday, 8pm.','don\'t cancel.'],ending:true}
+   ]},
+  {id:'c',letter:'C',title:'You left the yacht party 10 mins in',sub:'Monaco. Her family\'s 80ft yacht. 10 minutes.',setup:'You left the yacht. Ten minutes in.',
+   beats:[
+    {who:'them',msgs:['ten minutes.','my grandmother asked about you.','I had to explain that you needed to \'check something\'. On land.']},
+    {choices:[{label:'I felt seasick—',next:'c2'},{label:'There were too many people—',next:'c3'},{label:'I panicked, okay?',next:'c4'}]},
+    {id:'c2',who:'them',msgs:['we were docked.']},
+    {id:'c2c',choices:[{label:'*silence*',next:'c5'},{label:'I know',next:'c5'},{label:'I still felt it',next:'c8'}]},
+    {id:'c3',who:'them',msgs:['there were eleven.','eleven people.','and the ocean.']},
+    {id:'c3c',choices:[{label:'That\'s still a lot',next:'c5'},{label:'I know how it sounds',next:'c8'},{label:'I\'m sorry',next:'c5'}]},
+    {id:'c4',who:'them',msgs:['*pause*','why didn\'t you just tell me that.']},
+    {id:'c4c',choices:[{label:'I didn\'t want to seem weak—',next:'c8'},{label:'I didn\'t know how',next:'c8'},{label:'*silence*',next:'c12'}]},
+    {id:'c5',who:'them',msgs:['Papa noticed.','he noticed.']},
+    {id:'c5c',choices:[{label:'I\'ll apologize to him',next:'c12'},{label:'I\'m sorry to you too',next:'c12'},{label:'*silence*',next:'c12'}]},
+    {id:'c8',who:'them',msgs:['I\'ve seen you cry at a dog food commercial.','the yacht was safe.','*pause*','I was there.']},
+    {id:'c8c',choices:[{label:'I know.',next:'ending'},{label:'Celeste.',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'c12',who:'them',msgs:['*pause*','come back next weekend.','smaller boat. just us.','bring dramamine if you must.']},
+    {id:'c12c',choices:[{label:'Yeah?',next:'ending'},{label:'I\'ll be there',next:'ending'},{label:'Just us?',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*long read receipt*','yes.','just us.','*pause*','don\'t make it weird.'],ending:true}
+   ]},
+  {id:'d',letter:'D',title:'You returned the $100k Hermès haul',sub:'She sent them as gifts. You sent them back. Via her driver.',setup:'Seven Hermès boxes came back. With a Post-it.',
+   beats:[
+    {who:'them',msgs:['my driver just handed me seven Hermès boxes.','with a Post-it that said \'Thank you.\' A Post-it.']},
+    {choices:[{label:'I can\'t accept that—',next:'d2'},{label:'It\'s too much—',next:'d3'},{label:'I don\'t want to owe you—',next:'d4'}]},
+    {id:'d2',who:'them',msgs:['can\'t or won\'t.','choose your words carefully right now.']},
+    {id:'d2c',choices:[{label:'Won\'t',next:'d8'},{label:'Can\'t',next:'d8'},{label:'Both',next:'d8'}]},
+    {id:'d3',who:'them',msgs:['it\'s Tuesday.','I spend more on parking.']},
+    {id:'d3c',choices:[{label:'That\'s not the point',next:'d8'},{label:'I know',next:'d8'},{label:'*silence*',next:'d8'}]},
+    {id:'d4',who:'them',msgs:['you think I give gifts to collect debts?','is that what you think of me?']},
+    {id:'d4c',choices:[{label:'No—',next:'d9'},{label:'I didn\'t mean it like that—',next:'d9'},{label:'*silence*',next:'d9'}]},
+    {id:'d8',who:'them',msgs:['is this about the thing I said about your apartment?']},
+    {id:'d8c',choices:[{label:'No—',next:'d11'},{label:'Maybe—',next:'d11'},{label:'What did you say about it',next:'d11'}]},
+    {id:'d9',who:'them',msgs:['then what did you mean.','because those were the Birkins I sourced.','personally.','from the Faubourg store.']},
+    {id:'d9c',choices:[{label:'Can I keep just one?',next:'ending'},{label:'I\'m sorry',next:'ending'},{label:'Celeste.',next:'ending'}]},
+    {id:'d11',who:'them',msgs:['because I said it was cozy.','that\'s a compliment in Paris.']},
+    {id:'d11c',choices:[{label:'*silence*',next:'ending'},{label:'I know',next:'ending'},{label:'Can I keep just one',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*long pause*','the orange one is yours.','the rest I\'m donating out of spite.','*immediately* I\'m joking.','*pause*','mostly.'],ending:true}
+   ]}
+],
+riya: [
+  {id:'a',letter:'A',title:'You texted during her 36-hour shift',sub:'"Are you free tonight?" — at hour 28.',setup:'She\'s standing over an open chest cavity.',
+   beats:[
+    {who:'them',msgs:['I\'m standing over an open chest cavity and you\'re asking if I\'m free for dinner.']},
+    {choices:[{label:'I didn\'t know—',next:'a2'},{label:'I miss you—',next:'a3'},{label:'It can wait',next:'a4'}]},
+    {id:'a2',who:'them',msgs:['I told you.','Sunday through Monday. 36 hours.','you have my schedule.']},
+    {id:'a2c',choices:[{label:'I forgot',next:'a5'},{label:'I\'m sorry',next:'a5'},{label:'I wanted to hear your voice',next:'a6'}]},
+    {id:'a3',who:'them',msgs:['I miss sleep.','I miss a hot meal.','I miss using the bathroom alone.']},
+    {id:'a3c',choices:[{label:'Fair',next:'a7'},{label:'I\'ll make it up to you',next:'a7'},{label:'*silence*',next:'a7'}]},
+    {id:'a4',who:'them',msgs:['good.']},
+    {id:'a4c',choices:[{label:'Are you okay',next:'a8'},{label:'I\'ll be here when you\'re out',next:'a8'},{label:'*silence*',next:'a8'}]},
+    {id:'a5',who:'them',msgs:['I know.','*pause*','order food to my place.','leave it outside.','something warm.']},
+    {id:'a5c',choices:[{label:'What do you want?',next:'ending'},{label:'Already done',next:'ending'},{label:'I\'ll be there',next:'ending'}]},
+    {id:'a6',who:'them',msgs:['*pause*','don\'t do that.','*pause*','I can\'t be soft right now.']},
+    {id:'a6c',choices:[{label:'I know. I\'m sorry.',next:'ending'},{label:'I\'ll let you go',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'a7',who:'them',msgs:['I\'ll call you when I\'m out.','that\'s 11pm. maybe midnight.']},
+    {id:'a7c',choices:[{label:'I\'ll wait up',next:'ending'},{label:'Don\'t worry about me',next:'ending'},{label:'I\'ll be here',next:'ending'}]},
+    {id:'a8',who:'them',msgs:['*long pause*','*is typing*','biryani.','no raisins.','don\'t wake me up when you drop it off.']},
+    {id:'a8c',choices:[{label:'Already on it',next:'ending'},{label:'No raisins noted',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*sent at 11:47pm*','you didn\'t have to.','*pause*','but thank you.'],ending:true}
+   ]},
+  {id:'b',letter:'B',title:'You canceled the plans she rescheduled for',sub:'72 hours of shift-swapping. Canceled by text.',setup:'She traded a Saturday shift. Called in a favor. Missed Hopkins.',
+   beats:[
+    {who:'them',msgs:['I traded a Saturday shift.','called in a favor with Chen.','missed a conference call with Johns Hopkins.','for a text that said \'something came up.\'']},
+    {choices:[{label:'I\'m really sorry—',next:'b2'},{label:'I had a family thing—',next:'b3'},{label:'I should have called',next:'b4'}]},
+    {id:'b2',who:'them',msgs:['sorry is a word.','I need to understand what could possibly—']},
+    {id:'b2c',choices:[{label:'My dad was in the hospital',next:'b5'},{label:'I panicked',next:'b5'},{label:'*silence*',next:'b8'}]},
+    {id:'b3',who:'them',msgs:['you have a family.','they exist.','I knew that when I rescheduled my life.']},
+    {id:'b3c',choices:[{label:'I know that\'s not enough',next:'b8'},{label:'I should have told you',next:'b8'},{label:'I\'m sorry, Riya',next:'b8'}]},
+    {id:'b4',who:'them',msgs:['yes.','you should have.']},
+    {id:'b4c',choices:[{label:'Let me take you to dinner',next:'ending'},{label:'I\'ll make this right',next:'ending'},{label:'Riya.',next:'ending'}]},
+    {id:'b5',who:'them',msgs:['*long pause*','why didn\'t you just say that.']},
+    {id:'b5c',choices:[{label:'I didn\'t want you to worry',next:'ending'},{label:'I didn\'t know how',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'b8',who:'them',msgs:['I need to know if this is worth it.','my time is not something I give away.']},
+    {id:'b8c',choices:[{label:'It is. I promise.',next:'ending'},{label:'I know I keep failing that test',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['there\'s a place in Bandra.','no reservations usually.','Thursday, 8pm.','*pause*','don\'t cancel.'],ending:true}
+   ]},
+  {id:'c',letter:'C',title:'You said she was "just a doctor"',sub:'Someone quoted you. It got back to her. During rounds.',setup:'She heard it in the hall. From an intern.',
+   beats:[
+    {who:'them',msgs:['just a doctor.','I heard that today.','in the hall.','from an intern who heard it from someone who heard it from you.']},
+    {choices:[{label:'I didn\'t say it like that—',next:'c2'},{label:'I was just explaining—',next:'c3'},{label:'That\'s not what I meant',next:'c5'}]},
+    {id:'c2',who:'them',msgs:['how did you say it.']},
+    {id:'c2c',choices:[{label:'I said you save lives—',next:'c5'},{label:'I don\'t remember exactly',next:'c6'},{label:'*silence*',next:'c6'}]},
+    {id:'c3',who:'them',msgs:['what were you explaining?','that I spend 60 hours a week keeping people alive.','is that what needed explaining.']},
+    {id:'c3c',choices:[{label:'No. I was proud of you.',next:'c5'},{label:'I\'m sorry. That was wrong.',next:'c5'},{label:'*silence*',next:'c5'}]},
+    {id:'c5',who:'them',msgs:['I did a 14-hour spinal surgery yesterday.','on a 9-year-old.','and today I heard \'just a doctor.\'']},
+    {id:'c5c',choices:[{label:'Riya. I\'m sorry.',next:'ending'},{label:'I\'m so proud of you',next:'ending'},{label:'Tell me what you need from me',next:'ending'}]},
+    {id:'c6',who:'them',msgs:['I don\'t need perfect.','I need you to mean it when you introduce me.','not as a title.','as someone you chose.']},
+    {id:'c6c',choices:[{label:'I chose you.',next:'ending'},{label:'I do mean it',next:'ending'},{label:'Riya.',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*pause*','I know.','*pause*','that\'s what makes it complicated.'],ending:true}
+   ]},
+  {id:'d',letter:'D',title:'You questioned her call at a dinner party',sub:'"Are you sure that was right?" In front of her colleagues.',setup:'In front of Patel and his wife. Over lamb chops.',
+   beats:[
+    {who:'them',msgs:['in front of Patel and his wife.','\'are you sure that was the right call?\'','I have a board certification and twelve years of surgical training.','and you questioned me over lamb chops.']},
+    {choices:[{label:'I was just curious—',next:'d2'},{label:'I didn\'t think it was a big deal—',next:'d3'},{label:'You\'re right. I\'m sorry.',next:'d4'}]},
+    {id:'d2',who:'them',msgs:['you were undermining me.','in front of the people I operate with.']},
+    {id:'d2c',choices:[{label:'That wasn\'t my intent',next:'d5'},{label:'I know. I\'m sorry.',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d3',who:'them',msgs:['I know.','that\'s the problem.']},
+    {id:'d3c',choices:[{label:'I hear you',next:'d5'},{label:'Tell me how to do better',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d4',who:'them',msgs:['I don\'t question you at your work.','I don\'t walk into your office and say \'are you sure about that email?\'']},
+    {id:'d4c',choices:[{label:'You\'re right',next:'d5'},{label:'Fair.',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d5',who:'them',msgs:['good.','now tell me you actually want dessert','because I\'m ordering the gulab jamun','and I\'m not sharing if we\'re still fighting.']},
+    {id:'d5c',choices:[{label:'We\'re not fighting',next:'ending'},{label:'*orders two*',next:'ending'},{label:'I want the gulab jamun',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*laugh react*','fine.','*pause*','but I\'m still annoyed.'],ending:true}
+   ]}
+],
+nova: [
+  {id:'a',letter:'A',title:'You didn\'t watch her Grammy performance live',sub:'180 million viewers. You were asleep.',setup:'She dedicated the last song. You were asleep.',
+   beats:[
+    {who:'them',msgs:['180 million viewers.','you were asleep.']},
+    {choices:[{label:'I recorded it!',next:'a2'},{label:'I fell asleep, I\'m sorry—',next:'a3'},{label:'I watched part of it',next:'a5'}]},
+    {id:'a2',who:'them',msgs:['it\'s not the same.','recording it is like saying you\'ll watch a sunrise later.']},
+    {id:'a2c',choices:[{label:'What song did you dedicate',next:'a5'},{label:'Play it for me now?',next:'a6'},{label:'I\'m sorry',next:'a7'}]},
+    {id:'a3',who:'them',msgs:['I dedicated the last song.','publicly.','to someone I thought was watching.']},
+    {id:'a3c',choices:[{label:'What song',next:'a5'},{label:'Nova. I\'m so sorry.',next:'a7'},{label:'I would have loved to see it',next:'a6'}]},
+    {id:'a5',who:'them',msgs:['\'Still Here.\'','if you\'d watched you\'d know why that\'s awkward right now.']},
+    {id:'a5c',choices:[{label:'Play it for me now?',next:'a6'},{label:'I want to hear it',next:'a6'},{label:'*silence*',next:'a8'}]},
+    {id:'a6',who:'them',msgs:['*pause*','fine.','but you have to actually listen.','not while doing something else.']},
+    {id:'a6c',choices:[{label:'Just us. No phone.',next:'ending'},{label:'You have my full attention',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'a7',who:'them',msgs:['*read receipt*','you\'re lucky you\'re you.']},
+    {id:'a7c',choices:[{label:'What does that mean',next:'ending'},{label:'*silence*',next:'ending'},{label:'Nova.',next:'ending'}]},
+    {id:'a8',who:'them',msgs:['*long read receipt*','*is typing*','come to the next show.','front row.','actually watch.']},
+    {id:'a8c',choices:[{label:'Front row?',next:'ending'},{label:'I\'ll be there',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*three dots*','just. come.','*pause*','I want to look out and actually see you.'],ending:true}
+   ]},
+  {id:'b',letter:'B',title:'You posted a photo without clearing it',sub:'One Instagram story. Her PR sent 4 emails.',setup:'Her publicist is having a breakdown. It\'s 7am.',
+   beats:[
+    {who:'them',msgs:['my publicist is having a breakdown.','my manager is on her third espresso.','it\'s 7am.']},
+    {choices:[{label:'It was just a story—',next:'b2'},{label:'I\'ll delete it—',next:'b3'},{label:'I didn\'t know I needed to',next:'b4'}]},
+    {id:'b2',who:'them',msgs:['there\'s no \'just\' in my world.','everything is a statement.']},
+    {id:'b2c',choices:[{label:'I\'m sorry. I should have asked.',next:'b5'},{label:'I understand now',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b3',who:'them',msgs:['it\'s been screenshotted 40,000 times.','it lives on the internet now.','forever.']},
+    {id:'b3c',choices:[{label:'I didn\'t think—',next:'b5'},{label:'I\'m sorry, Nova',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b4',who:'them',msgs:['I know you didn\'t.','that\'s why we needed to talk about this before.']},
+    {id:'b4c',choices:[{label:'What do you need me to do',next:'b5'},{label:'I\'m listening',next:'b5'},{label:'Tell me the rules',next:'b5'}]},
+    {id:'b5',who:'them',msgs:['nothing now.','just...','ask me next time.','okay?','there\'s a version of us that can be public.','I just want to choose when.']},
+    {id:'b5c',choices:[{label:'Okay. I promise.',next:'ending'},{label:'When you\'re ready',next:'ending'},{label:'Nova.',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*pause*','and for what it\'s worth','*pause*','you looked good in it.'],ending:true}
+   ]},
+  {id:'c',letter:'C',title:'You got starstruck and ignored her backstage',sub:'You talked to her opening act for 45 minutes.',setup:'She watched from the side of the stage.',
+   beats:[
+    {who:'them',msgs:['you had a full conversation with Marcus for 45 minutes.','I was right there.']},
+    {choices:[{label:'He\'s amazing—',next:'c2'},{label:'I didn\'t realize—',next:'c3'},{label:'I\'m sorry, that was rude',next:'c4'}]},
+    {id:'c2',who:'them',msgs:['I know.','he opened for me.','that\'s how talent works.']},
+    {id:'c2c',choices:[{label:'I got starstruck. By him.',next:'c5'},{label:'I\'m sorry',next:'c5'},{label:'*silence*',next:'c5'}]},
+    {id:'c3',who:'them',msgs:['I watched you from the side of the stage.','you didn\'t even look.']},
+    {id:'c3c',choices:[{label:'I was nervous to be there',next:'c5'},{label:'I\'m sorry',next:'c5'},{label:'I don\'t know what to say',next:'c5'}]},
+    {id:'c4',who:'them',msgs:['it was.','but also...','you were so excited.','it was kind of adorable.','and also very annoying.']},
+    {id:'c4c',choices:[{label:'Adorable how',next:'ending'},{label:'Can I make it up to you',next:'c5'},{label:'*silence*',next:'ending'}]},
+    {id:'c5',who:'them',msgs:['come to the after-party.','stay next to me this time.','like, actually next to me.']},
+    {id:'c5c',choices:[{label:'Deal',next:'ending'},{label:'I\'ll be right there',next:'ending'},{label:'Only if you introduce me as yours',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*pause*','*laugh react*','don\'t push it.','*pause*','...yeah okay.'],ending:true}
+   ]},
+  {id:'d',letter:'D',title:'You said she looked tired at her press junket',sub:'"You look tired" — with 6 interviews left.',setup:'Her makeup team heard. Her stylist heard.',
+   beats:[
+    {who:'them',msgs:['you said I looked tired.','on camera. adjacent to camera.','my makeup team heard.','my stylist heard.']},
+    {choices:[{label:'I meant it nicely—',next:'d2'},{label:'You looked like you needed coffee—',next:'d3'},{label:'I\'m sorry. I shouldn\'t have said it.',next:'d4'}]},
+    {id:'d2',who:'them',msgs:['there is no nice version of \'you look tired\' before a press junket.']},
+    {id:'d2c',choices:[{label:'I know. I\'m sorry.',next:'d5'},{label:'You looked stunning',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d3',who:'them',msgs:['I always look like I need coffee.','I function on cold brew and ambition.']},
+    {id:'d3c',choices:[{label:'I know. That\'s what I meant.',next:'d5'},{label:'Fair',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d4',who:'them',msgs:['6 interviews left.','I need to walk back in there in 4 minutes.']},
+    {id:'d4c',choices:[{label:'Go own it',next:'d5'},{label:'You\'re going to be incredible',next:'d5'},{label:'Text me after',next:'d5'}]},
+    {id:'d5',who:'them',msgs:['obviously.','but text me something nice for after.','something real.']},
+    {id:'d5c',choices:[{label:'You held that room today.',next:'ending'},{label:'I\'m proud of you.',next:'ending'},{label:'You were never tired. You were electric.',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*three dots*','*pause*','okay.','*pause*','that\'s actually nice.'],ending:true}
+   ]}
+],
+arjun: [
+  {id:'a',letter:'A',title:'You forgot the Festival of Lights ceremony',sub:'He invited you to a 300-year tradition. You asked what time dinner was.',setup:'His father lit the first lamp. His grandmother chanted.',
+   beats:[
+    {who:'them',msgs:['my father lit the first lamp tonight, the way his father did before him.','my grandmother chanted the invocation she\'s known since she was younger than I am now.','and in the middle of all of it, you asked what time we were eating.']},
+    {choices:[{label:'I didn\'t know—',next:'a2'},{label:'I should have listened better—',next:'a3'},{label:'I\'m sorry, Arjun',next:'a3'}]},
+    {id:'a2',who:'them',msgs:['I told you about this evening on three separate occasions, including once in person, sitting across from you.','I thought I had been clear about what it meant to me.']},
+    {id:'a2c',choices:[{label:'I should have listened more carefully',next:'a4'},{label:'I was nervous and I wasn\'t present',next:'a4'},{label:'*silence*',next:'a4'}]},
+    {id:'a3',who:'them',msgs:['Tihar has been celebrated in my family for three hundred years, through wars and exile and everything in between.','I wanted you to be part of that history, not just a guest standing at the edge of it.']},
+    {id:'a3c',choices:[{label:'I want to be part of it',next:'a4'},{label:'I want to understand what matters to you',next:'a5'},{label:'*silence*',next:'a4'}]},
+    {id:'a4',who:'them',msgs:['my mother noticed you checking your phone during the aarti, and she didn\'t say anything, which somehow felt worse than if she had.']},
+    {id:'a4c',choices:[{label:'I\'ll apologize to her',next:'a5'},{label:'I\'m deeply sorry',next:'a5'},{label:'*silence*',next:'a5'}]},
+    {id:'a5',who:'them',msgs:['then ask me about it properly, later tonight, when we\'re not standing in front of the sacred fire with half my family watching.']},
+    {id:'a5c',choices:[{label:'Tell me everything. Tonight. I\'m listening.',next:'ending'},{label:'I want to learn',next:'ending'},{label:'I\'m ready now',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*pause*','it takes about four hours to explain properly, the history and all the small rituals within it.','*pause*','do you actually have four hours, or are you just saying that to make me feel better.'],ending:true}
+   ]},
+  {id:'b',letter:'B',title:'You called the palace "old"',sub:'"It\'s very old" — to a 12th century royal residence.',setup:'Your great-great-great-grandfather built the east wing.',
+   beats:[
+    {who:'them',msgs:['old.','you called it old, in front of the staff, like it was a building you were mildly impressed by on a tour.','my great-great-great-grandfather built the east wing with his own hands, or at least his own vision — he had architects, but every stone was his intention.']},
+    {choices:[{label:'I meant it\'s historic—',next:'b2'},{label:'I was nervous—',next:'b3'},{label:'I\'m sorry. That was thoughtless.',next:'b4'}]},
+    {id:'b2',who:'them',msgs:['historic. that\'s a better word, and I\'ll let you use it from now on.','it carries the weight that "old" simply doesn\'t.']},
+    {id:'b2c',choices:[{label:'Noted. I will.',next:'b5'},{label:'I meant no disrespect',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b3',who:'them',msgs:['I know you were nervous, I could tell — your left hand was shaking the entire time we had tea.','I should have warned you it would feel like more than just meeting my parents.']},
+    {id:'b3c',choices:[{label:'You noticed that?',next:'b5'},{label:'I want your family to like me',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b4',who:'them',msgs:['my brother heard you say it, and he thinks you were being careless about something that matters to us.','I told him you were nervous, because I wanted to believe that more than I wanted to be angry.']},
+    {id:'b4c',choices:[{label:'I was nervous',next:'b5'},{label:'I\'ll apologize to him',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b5',who:'them',msgs:['my family will respect you the moment they see you respect what we come from, not before.','the building itself is old, yes — but everything it holds inside it is not.']},
+    {id:'b5c',choices:[{label:'I understand that now',next:'ending'},{label:'I do respect it',next:'ending'},{label:'Teach me more',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['come back for the spring equinox, and this time wear something formal — I\'ll have it sent to you.','*pause*','I\'ll prepare you properly before you arrive, so none of this happens twice.'],ending:true}
+   ]},
+  {id:'c',letter:'C',title:'You told a journalist you\'re "just friends"',sub:'It ran in an international paper.',setup:'The Times. International edition.',
+   beats:[
+    {who:'them',msgs:['The Times. International edition.','\'just good friends\' — that was the entire quote they used, attributed to you, with my name right beside it.','my press secretary sent me the article with no message attached. just the link, which somehow said everything.']},
+    {choices:[{label:'I panicked—',next:'c2'},{label:'I didn\'t want to speak for you—',next:'c3'},{label:'I\'m sorry. That was wrong.',next:'c4'}]},
+    {id:'c2',who:'them',msgs:['I understand panic, I really do — but I don\'t understand how panic erases three months of meaning down to two careless words.']},
+    {id:'c2c',choices:[{label:'What should I have said',next:'c5'},{label:'I was protecting you',next:'c5'},{label:'*silence*',next:'c5'}]},
+    {id:'c3',who:'them',msgs:['that part I appreciate, genuinely — but \'just friends\' was not the same as staying silent.','silence would have left room for something. that closed the door.']},
+    {id:'c3c',choices:[{label:'You\'re right',next:'c5'},{label:'I know',next:'c5'},{label:'*silence*',next:'c5'}]},
+    {id:'c4',who:'them',msgs:['in my country, what exists between us is treated as serious the moment it becomes public.','what I choose to share with the world carries weight I don\'t think you fully understand yet.']},
+    {id:'c4c',choices:[{label:'I understand that now',next:'c5'},{label:'I\'m sorry, Arjun',next:'c5'},{label:'*silence*',next:'c5'}]},
+    {id:'c5',who:'them',msgs:['\'no comment\' exists precisely for situations like this one — it would have cost you nothing and protected everything.']},
+    {id:'c5c',choices:[{label:'I won\'t do it again',next:'ending'},{label:'I\'ll fix it',next:'ending'},{label:'I promise',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['come to Kathmandu next month, and I\'ll have the guest wing prepared properly for you.','*pause*','no journalists this time. just us, and the mountains, and nothing to explain to anyone.'],ending:true}
+   ]},
+  {id:'d',letter:'D',title:'You refused royal protocol with the Elder Council',sub:'You shook hands instead of bowing.',setup:'Elder Dorje looked at him. Just looked.',
+   beats:[
+    {who:'them',msgs:['a handshake. you offered the Elder Council a handshake, the way you might greet a colleague at a conference.','they are eighty years old, custodians of traditions that predate both our families combined, and you treated the moment like a business introduction.']},
+    {choices:[{label:'I didn\'t know the protocol—',next:'d2'},{label:'I was trying to be friendly—',next:'d3'},{label:'I\'m sorry',next:'d4'}]},
+    {id:'d2',who:'them',msgs:['I sent you a document outlining exactly what to expect, a physical one, hand-delivered to your room the night before.','I wanted you to have time to actually absorb it, not just glance at it.']},
+    {id:'d2c',choices:[{label:'I didn\'t read it carefully',next:'d5'},{label:'I\'m sorry',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d3',who:'them',msgs:['friendly is good, friendly is what I want from you eventually — but it has an order to it here.','you bow first, out of respect for what they represent, and the warmth comes after, not instead of it.']},
+    {id:'d3c',choices:[{label:'Understood',next:'d5'},{label:'I\'ll remember',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d4',who:'them',msgs:['Elder Dorje looked at me afterward. just looked, no words at all.','he didn\'t need to say anything — the silence carried more weight than a reprimand would have.']},
+    {id:'d4c',choices:[{label:'I\'m deeply sorry',next:'d5'},{label:'I\'ll apologize to him',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d5',who:'them',msgs:['my culture is not an inconvenience to be navigated around or apologized for after the fact.','it is who I am, and I need you to understand that before this goes any further between us.']},
+    {id:'d5c',choices:[{label:'I want to learn',next:'ending'},{label:'I understand that',next:'ending'},{label:'Teach me. All of it.',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['it\'s not really a list situation, there\'s too much that only makes sense in context.','come here, and I\'ll walk you through everything in person, properly, from the beginning.','*pause*','give it one week. that\'s all I\'m asking.'],ending:true}
+   ]}
+],
+kisha: [
+  {id:'a',letter:'A',title:'You said you\'d call and didn\'t',sub:'She waited. She won\'t admit she waited.',setup:'She texted first. She never texts first.',
+   beats:[
+    {who:'them',msgs:['I didn\'t call either.','just so you know.']},
+    {choices:[{label:'I was going to—',next:'a2'},{label:'I know. I\'m sorry.',next:'a3'},{label:'I missed talking to you',next:'a4'}]},
+    {id:'a2',who:'them',msgs:['were you.']},
+    {id:'a2c',choices:[{label:'Yes',next:'a5'},{label:'*silence*',next:'a5'},{label:'Maybe not',next:'a5'}]},
+    {id:'a3',who:'them',msgs:['okay.']},
+    {id:'a3c',choices:[{label:'Just okay?',next:'a5'},{label:'Are you upset',next:'a5'},{label:'*silence*',next:'a5'}]},
+    {id:'a4',who:'them',msgs:['then you should have called.']},
+    {id:'a4c',choices:[{label:'I know.',next:'a5'},{label:'I know I should have.',next:'a5'},{label:'*silence*',next:'a5'}]},
+    {id:'a5',who:'them',msgs:['call next time.','before I stop expecting it.']},
+    {id:'a5c',choices:[{label:'I will',next:'ending'},{label:'I won\'t let you stop',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*long read receipt*','*typing*','*stops*','okay.'],ending:true}
+   ]},
+  {id:'b',letter:'B',title:'You mentioned your ex in conversation',sub:'Once. Casually. She heard everything you didn\'t say.',setup:'So you\'re still in contact with her.',
+   beats:[
+    {who:'them',msgs:['so you\'re still in contact with her.']},
+    {choices:[{label:'We\'re just friends—',next:'b2'},{label:'It\'s not like that—',next:'b3'},{label:'Why do you ask',next:'b4'}]},
+    {id:'b2',who:'them',msgs:['okay.']},
+    {id:'b2c',choices:[{label:'That\'s all you\'re going to say',next:'b5'},{label:'Does that bother you',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b3',who:'them',msgs:['I didn\'t say it was like anything.','I said okay.']},
+    {id:'b3c',choices:[{label:'Kisha.',next:'b5'},{label:'*silence*',next:'b5'},{label:'Tell me what you\'re actually thinking',next:'b5'}]},
+    {id:'b4',who:'them',msgs:['why did you bring her up.']},
+    {id:'b4c',choices:[{label:'It came up naturally',next:'b5'},{label:'I don\'t know',next:'b5'},{label:'*silence*',next:'b5'}]},
+    {id:'b5',who:'them',msgs:['I\'m not asking about your feelings for her.','I\'m asking why you told me.']},
+    {id:'b5c',choices:[{label:'I don\'t know why',next:'ending'},{label:'I wanted to be honest with you',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['*read receipt*','figure that out.','and then tell me.'],ending:true}
+   ]},
+  {id:'c',letter:'C',title:'You said "I love you" mid-argument',sub:'Like a card you played too early.',setup:'Don\'t say that when we\'re arguing.',
+   beats:[
+    {who:'them',msgs:['don\'t say that when we\'re arguing.']},
+    {choices:[{label:'But I mean it—',next:'c2'},{label:'Why not',next:'c3'},{label:'I\'m sorry',next:'c4'}]},
+    {id:'c2',who:'them',msgs:['I know you mean it.','that\'s not the point.']},
+    {id:'c2c',choices:[{label:'What is the point',next:'c5'},{label:'*silence*',next:'c5'},{label:'Tell me',next:'c5'}]},
+    {id:'c3',who:'them',msgs:['because you\'re using it to stop the conversation.','not to have one.']},
+    {id:'c3c',choices:[{label:'You\'re right',next:'c5'},{label:'I hear you',next:'c5'},{label:'*silence*',next:'c5'}]},
+    {id:'c4',who:'them',msgs:['*pause*','I know.']},
+    {id:'c4c',choices:[{label:'Tell me when it\'s the right time',next:'c5'},{label:'*silence*',next:'c5'},{label:'I\'m listening',next:'c5'}]},
+    {id:'c5',who:'them',msgs:['say it when I\'m not trying to say something important.','say it when it\'s just that.']},
+    {id:'c5c',choices:[{label:'I hear you.',next:'ending'},{label:'I\'ll wait for the right moment',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['it\'ll come.','*pause*','it always does.'],ending:true}
+   ]},
+  {id:'d',letter:'D',title:'You forgot she told you something important',sub:'She mentioned it twice. You forgot both times.',setup:'I told you twice.',
+   beats:[
+    {who:'them',msgs:['I told you twice.','twice.']},
+    {choices:[{label:'I\'m sorry—',next:'d2'},{label:'That\'s not fair—',next:'d3'},{label:'*silence*',next:'d4'}]},
+    {id:'d2',who:'them',msgs:['you\'re always sorry.']},
+    {id:'d2c',choices:[{label:'That\'s not fair',next:'d5'},{label:'I know',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d3',who:'them',msgs:['it\'s what\'s true.']},
+    {id:'d3c',choices:[{label:'You\'re right',next:'d5'},{label:'*silence*',next:'d5'},{label:'I know',next:'d5'}]},
+    {id:'d4',who:'them',msgs:['when I tell you something it\'s because it matters.','you make me feel like I don\'t.']},
+    {id:'d4c',choices:[{label:'That\'s not what I\'m doing—',next:'d5'},{label:'I hear you',next:'d5'},{label:'*silence*',next:'d5'}]},
+    {id:'d5',who:'them',msgs:['you remember things you care about.']},
+    {id:'d5c',choices:[{label:'I\'ll do better.',next:'ending'},{label:'You\'re right. I will.',next:'ending'},{label:'*silence*',next:'ending'}]},
+    {id:'ending',who:'them',msgs:['prove it.','*pause*','not to me.','prove it to yourself.'],ending:true}
+   ]}
+]
+};
+
+// ── CHARACTER DEFS ───────────────────────────────────────────────────────────
+// ── ROCKET TRAIL QUOTES ──────────────────────────────────────────────────────
+// Melancholy one-liners that trail behind the rocket on the scene-select screen.
+const ROCKET_QUOTES = [
+  "some people leave before they ever really arrive.",
+  "I kept the chair empty just in case.",
+  "you can miss someone and still not call.",
+  "the hardest goodbyes are the ones nobody says out loud.",
+  "I still check if you're online sometimes.",
+  "distance doesn't end things. silence does.",
+  "I wonder if you think of me at this hour too.",
+  "we never got a real ending. just a long pause.",
+  "some love stories don't get a final chapter.",
+  "I let go, but my hands still remember holding on.",
+];
+
+const CHARACTERS = [
+  {id:'celeste',name:'Celeste Valérian',role:'Billionaire Heiress',emoji:'👑',color:'#c9a84c',gradient:'linear-gradient(160deg,rgba(80,62,15,0.55),rgba(15,12,6,0.6))',online:true,tagline:'She texted first. That means something.',blurb:'Old money, sharp tongue, soft underneath if you earn it'},
+  {id:'riya',name:'Dr. Riya Mehta',role:'Trauma Surgeon',emoji:'🩺',color:'#c0392b',gradient:'linear-gradient(160deg,rgba(80,25,15,0.55),rgba(15,8,6,0.6))',online:true,tagline:'Post-call. Don\'t test her today.',blurb:'Trauma surgeon with a heavy schedule and a heavier heart'},
+  {id:'nova',name:'Nova',role:'Global Icon',emoji:'🌟',color:'#4a7fa5',gradient:'linear-gradient(160deg,rgba(15,55,90,0.55),rgba(6,18,33,0.6))',online:true,tagline:'Flying somewhere. Always.',blurb:'World-famous, world-tired, just wants to be seen as a person'},
+  {id:'arjun',name:'Prince Arjun',role:'Prince of the Himalayas',emoji:'🏔️',color:'#2e8b57',gradient:'linear-gradient(160deg,rgba(15,65,40,0.55),rgba(6,22,13,0.6))',online:true,tagline:'Kathmandu. At the Palace.',blurb:'Royal duty on his shoulders, patient and quietly devoted'},
+  {id:'kisha',name:'Kisha',role:'The One That Got Away',emoji:'🌙',color:'#7c5cbf',gradient:'linear-gradient(160deg,rgba(60,30,80,0.55),rgba(20,11,22,0.6))',online:true,tagline:'Online. Thinking too much.',blurb:'Guarded, sharp, says less than she feels — until she doesn\'t'}
+];
+
+
+// ── PAYWALL CODE SETS ──────────────────────────────────────────────────────
+// 50 fixed redemption codes per tier. Each is 20 alphanumeric characters in
+// XXXXX-XXXXXXXXXX-XXXXX groups. These are static and permanent — once issued
+// via Ko-fi fulfillment, a code will always validate, across any session/device.
+const CODES_699 = new Set([
+  '8XKVY-XTZNXG1ZE6-WZZTB',
+  'WH3PK-U3QM9E7CE0-DBMMG',
+  'SM2UA-V1O9C9TNL7-77LD5',
+  '3B758-W9QQEIDKUF-M28QD',
+  '9J1WC-1SJD3WYENW-QNMI4',
+  'Z19QK-OVZM0K4UCB-8M1T8',
+  'UZWOT-2YYJRPYF3A-VFR57',
+  'YIC6Y-M2HPTD5NW8-VRGJ6',
+  'C95SB-JJ3F53BLMK-POC23',
+  'ZTUB1-WGKFATMKMG-FK9ZP',
+  'D1O0V-934MEEEIXR-YBAPD',
+  '89HZR-79SJA0T5XC-UADFD',
+  'X10Z4-LA5LME1MF9-7K0OF',
+  'O6L1B-178TGUSD5X-UBXVN',
+  'G8BDZ-7ZCZAC13FU-7296N',
+  'F3XXC-JJGO0KIMQY-4VEXN',
+  'K4R8F-R4QJGNJKJC-ADPWH',
+  'TME61-7YZFMLXN7D-PGS9U',
+  'SUSCQ-0UVF8R8RCU-DI155',
+  'VKY7B-2EM8YTN750-2IZYY',
+  'LEQVI-QR7QGGLIW0-I6HJ6',
+  'YW19B-TFYY63BGDP-JOEBD',
+  'C7BUJ-VPTTVTZVLC-8ZG11',
+  'ZO2EO-A7LZRVQ2LE-A8QU2',
+  'BSO74-ZHWDAO6Q3S-2L7BU',
+  '3Z9CP-48L4RTK48T-Z8397',
+  '01CJV-GYVG9POXQK-2OVG5',
+  'TEC9H-NOM610GCBI-OAW95',
+  '7DME7-U6IV88RU83-QG2SH',
+  'CCMRR-FIOJKG7IXR-EKR70',
+  'Q1B1M-R5TQYH97QL-U67V5',
+  '3I1R2-I6SXDU5ER9-JTTKR',
+  'Y9LVP-WU8AX2O7V4-0OIOW',
+  'QNJT9-4ZDQSUBK7U-HUDJF',
+  '6N5M9-X0KONPB8WL-5VHTH',
+  'SZC3R-40UTOI4T17-B2V0Y',
+  'W4E5Q-G4V6WDO20G-7GFHN',
+  '4Z2UP-US9FU4OBAI-GWMR7',
+  'WQ6Z8-J9LQAO18TB-F51PW',
+  '990VO-9UMELOU8H8-G0FIK',
+  'UCMP0-NYHP9OOUXT-P4UFC',
+  'E02FB-6H9XK2930R-AANUO',
+  'VB4IO-QFJTJ1Q05W-BFIOA',
+  'PYCOK-Q9KPR5N8DR-U44BZ',
+  '2UGQS-EES2RRCYN7-MMCHP',
+  '8QQQV-LM295IFJGG-13D8Z',
+  'EX6A1-DYDYO1U7Q8-QUM3C',
+  'L6JU2-OCE8HCLIYV-9W6HO',
+  '211TY-LPVJXRNTMV-IU831',
+  'E6PN9-RLZRNXOI0N-0E1N2'
+]);
+
+const CODES_999 = new Set([
+  'K3DAB-2R1IRPLVI7-USS5X',
+  'WQBRW-6R5INYJI9E-PGPUV',
+  '1WKNT-ATWQ4CWOEL-QSJPQ',
+  'SNF8F-TDM1GZC6YI-3CLCP',
+  'WKNB2-SI877K0R9V-H4L46',
+  'L7JWU-XBRET0FGMF-1UFU9',
+  '6N3G2-6ZVLZOEC4A-LCQIM',
+  'CA5SV-8MJLIBGPKG-65FOP',
+  'K0EYY-MMJUALXMRY-K070Z',
+  'GBRS9-GI40TUIGBE-YMGFD',
+  'SN75R-MGBPIXEG2B-5AWQV',
+  'Q9IKY-CE2KQTKLHS-6FTKQ',
+  '888OX-943APSNUHR-UABCG',
+  'WSW25-V88WQTJ9OJ-EHHW9',
+  'AU5W3-9RPD815TDH-U9YYI',
+  'T86C8-JP9Z7MPO3W-J5EYY',
+  'NCW7S-N1KTR9BLAX-TCPYN',
+  '2OWAB-391UTAHOCY-1Y4UF',
+  '6RU4F-KMB8GH9RQ9-QW4RD',
+  'QXA49-LHGJ13FEY8-MIW98',
+  'E0F1R-SFN5URZ0OM-2YV8H',
+  'EPRHL-Y7EQ5WX7KJ-HGI2F',
+  'KE3XE-4CHGZ2CPVI-ERYQD',
+  'OGFMM-7Q4ZLDBJTO-5JVLG',
+  '55643-8BQ31VE6XH-4FDHW',
+  'WQX8C-Q7LIEGQG4Q-2H3W9',
+  'D1DIO-C3UDHZINOA-B76D5',
+  '6A1MF-V2DHZJVLPU-K6VS8',
+  'UU108-HQA13J6VVY-8SX6C',
+  'UADN8-Q9BIUJ6UQP-ELHAJ',
+  'SQ2SI-019752AQJT-GA4AD',
+  '2E430-W2F4HX02YU-7IOKY',
+  'ADG1Y-51JVJGY7V9-R2J0A',
+  'GKXBZ-EF6PH3Z50L-MIEPC',
+  '1ZEO9-5LTRFAUFEI-TISKD',
+  'E0ADH-3C9U695M7P-F2GVK',
+  'N1UHS-7OPM4L1BKH-49AL9',
+  'U2QEC-CDY81AJZTH-2HD3Q',
+  'L7IIH-MCNVN7FETR-7UGL6',
+  'FR8LN-EM1F20560I-7BEAH',
+  'K7XC5-5BHU2BI9XJ-QVTHD',
+  'RDSSY-QCE4HF9QVP-FVF94',
+  'IGASI-NUSI62O1TC-4S71X',
+  'NQMID-LXDB9Z1LC0-6UZWX',
+  'A3R0M-HYFIYPDADI-K99ZI',
+  'QO1SJ-GV6OLM0A14-Q9LCZ',
+  '5HR3W-RADP2ADO19-EDJWC',
+  '5LRT4-1O4DXF6XTS-CXGI5',
+  'EAXES-EOUFR2ERSL-Z9V6V',
+  'W1AGX-U54V58KHYJ-4EWZP'
+]);
+
+const CODES_1499 = new Set([
+  '9H3TG-YSQPO31R3L-17OEN',
+  '1KMHQ-F30T1D6850-C9SNE',
+  'BEY3Y-S8WWV3T0AP-V6B41',
+  'JYMWM-P8PD15PGQD-XQRLF',
+  'RKDQ0-9WW8VDJZF4-WT4A1',
+  '4TEQH-OFPEBMDTVD-3VMD2',
+  'IJGXS-UIGAX0H3ZO-T39NQ',
+  '9UU78-ETZSSDRPUG-TLVJU',
+  'F50NJ-1FZGQR6TTW-54LTL',
+  'A66LM-X4HBCK4BEN-G21AL',
+  'LMP6I-4B3RE4EKTH-U7GK0',
+  '0BNSQ-16KK6MAONI-BS51K',
+  'OKNI0-6DV4M7GKNW-472T8',
+  '015FN-4IJ7ZYW31G-UG8V8',
+  'FQH9B-JXSDJCTYYK-SR8JL',
+  'JOO5J-NTH14783OY-ORH6A',
+  '758YV-6UFUXL4R77-8P4SO',
+  '3JF69-JCPDIE4K11-YZNCK',
+  'EIAA3-VUCHSWC7ZN-1PG2I',
+  'MESSO-J2LB8ZCM3S-RCHAX',
+  'P2DDU-98A9U2JYO5-L8T2F',
+  'WQ3GI-ERD9GB6Q1X-HYX00',
+  'E8V2X-DJMYE02LEC-CUMTP',
+  '93ICV-JO2UTOTRGC-30ADE',
+  '6UXZA-1USK8Z231D-KIECX',
+  'WWJJ4-GZTFDBHAV7-QHXOQ',
+  'QJE2S-VZQ9SA4MWA-1EJJ4',
+  'SZYBZ-20ELEX79IC-TCL3H',
+  'R2YYF-QH5Y87G677-E546Q',
+  'CGJ0Y-6DF4WWYILN-CL2R3',
+  'EMEQZ-W1QIK159BG-EFTOO',
+  'U8V9L-DMX3CGOXI4-443JG',
+  'JKOKP-JW7SWTN1WB-DP42C',
+  '1ISFL-CS8MN04MZS-MBBRK',
+  '0H7SY-T8ZDRUOZA2-DPNG8',
+  'I5FXS-KYP4YOFH74-SMD4R',
+  'VLL1Q-L02YMBXQ76-U13L7',
+  'GKKZI-KZLBOWBKX4-S4AHW',
+  '1AO5W-RDP9RTU8ZY-VRI6B',
+  '4KXFL-K4YE3P03R7-68XLO',
+  'PVPJK-X8YYS3MCRE-3WV97',
+  'AR2MD-PD6P5UDZ4I-UWJJG',
+  '4XNXS-BMVQRMJQOQ-WIJ9Y',
+  'HV7DY-Q39RI3LMMZ-EY8P0',
+  'BEHLT-VEPRXU3U8Z-5MRDJ',
+  '31IT1-PL147JGCY6-VRVL4',
+  'LQKY7-JB4ZO13YK6-I5J3T',
+  '42PQ1-0L4FI1AKBK-15UAB',
+  'TXU98-JDCSOX46I5-0GWD3',
+  '2IIKK-T7TTEP4HGG-723IC'
+]);
+const KOFI_699 = "https://ko-fi.com/s/32af37fec0";
+const KOFI_999 = "https://ko-fi.com/s/4162b44b7b";
+const KOFI_1499 = "https://ko-fi.com/s/1fc7012441"; // TODO: replace once Ko-fi page is corrected to show $14.99
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const S = {
+  screen: localStorage.getItem('sit_onboarded') ? 'home' : 'lock',
+  lockChoice: null, // 'A' or 'B'
+  lockSelectedChars: [], // for option A (2 chars) or B (1 char)
+  pendingLockConfirm: false,
+
+  tier: localStorage.getItem('sit_tier') || 'free', // free | 699 | 999 | 1499
+  unlockedChars: JSON.parse(localStorage.getItem('sit_unlocked_chars')||'[]'),
+  taps: parseInt(localStorage.getItem('sit_taps')||'0'),
+  tapCap: parseInt(localStorage.getItem('sit_tap_cap')||'0'),
+
+  selectedChar: null,
+  selectedSceneDef: null,
+  compiledFlow: null,
+  currentNodeIdx: 0,
+  displayedMsgs: [],
+  isAnimating: false,
+  currentChoices: null,
+
+  showCodeEntry: false,
+  codeError: '',
+  tierPicking: null, // '699' or '999' while picking chars for that tier
+  tierCharSelection: []
+};
+
+function saveOnboard(){
+  localStorage.setItem('sit_onboarded','1');
+  localStorage.setItem('sit_unlocked_chars', JSON.stringify(S.unlockedChars));
+  localStorage.setItem('sit_tap_cap', S.tapCap);
+}
+function saveTaps(){ localStorage.setItem('sit_taps', S.taps); }
+function saveTier(){
+  localStorage.setItem('sit_tier', S.tier);
+  localStorage.setItem('sit_unlocked_chars', JSON.stringify(S.unlockedChars));
+}
+
+function isCharUnlocked(charId){
+  if(S.tier==='1499') return true;
+  return S.unlockedChars.includes(charId);
+}
+function tapsLeft(){
+  if(S.tier==='1499') return Infinity;
+  return S.tapCap - S.taps;
+}
+function tierLabel(){
+  if(S.tier==='1499') return 'Everything ✨';
+  if(S.tier==='999') return '1000 · 5 chars';
+  if(S.tier==='699') return '500 · 3 chars';
+  return 'Free trial';
+}
+
+const app = document.getElementById('app');
+
+function render(){
+  app.innerHTML='';
+  if(S.screen==='lock') renderLock();
+  else if(S.screen==='home') renderHome();
+  else if(S.screen==='scenes') renderScenes();
+  else if(S.screen==='chat') renderChat();
+  else if(S.screen==='wall') renderWall();
+  else if(S.screen==='ending') renderEnding();
+}
+
+// ── LOCK SCREEN ONBOARDING ──────────────────────────────────────────────────
+function renderLock(){
+  const wrap = div('lock-screen');
+
+  // Fluid blob nebula background, layered behind the content
+  const blobs = div('lock-blobs');
+  ['b1','b2','b3','b4','b5'].forEach(cls=>{
+    blobs.appendChild(div('lock-blob '+cls));
+  });
+  // scatter a handful of twinkling stars at randomized positions/delays
+  for(let i=0;i<14;i++){
+    const star = div('lock-twinkle');
+    const size = 1.5 + Math.random()*2.5;
+    star.style.width = size+'px';
+    star.style.height = size+'px';
+    star.style.left = (Math.random()*94+2)+'%';
+    star.style.top = (Math.random()*92+2)+'%';
+    star.style.animationDelay = (Math.random()*3.5)+'s';
+    star.style.animationDuration = (2.5+Math.random()*3)+'s';
+    blobs.appendChild(star);
+  }
+  wrap.appendChild(blobs);
+
+  const timeWrap = div('lock-time-wrap'+(S.lockChoice?' compact':''));
+  const now = new Date();
+  const h = now.getHours()%12||12, m=String(now.getMinutes()).padStart(2,'0');
+  timeWrap.appendChild(mkEl('div','lock-time',h+':'+m));
+  if(!S.lockChoice){
+    timeWrap.appendChild(mkEl('div','lock-date',now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})));
+  }
+  wrap.appendChild(timeWrap);
+  wrap.appendChild(div('lock-divider'));
+
+  const card = div('lock-card');
+  card.appendChild(mkEl('div','lock-title','choose your story'));
+  card.appendChild(mkEl('div','lock-sub','Your first taps are free. How you spend them is permanent — choose wisely, you can\'t choose again.'));
+
+  // Option A
+  const optA = div('lock-option'+(S.lockChoice==='A'?' chosen':S.lockChoice==='B'?' dimmed':''));
+  optA.appendChild(mkEl('div','lock-option-letter', S.lockChoice==='A' ? '✓ Option A — selected' : 'Option A'));
+  optA.appendChild(mkEl('div','lock-option-title','50 free taps each, two characters'));
+  if(S.lockChoice!=='A'){
+    optA.appendChild(mkEl('div','lock-option-sub','Split your free trial across two storylines. Less depth in each, but you get to compare.'));
+  }
+  optA.addEventListener('click',()=>{
+    if(S.lockChoice==='A') return;
+    S.lockChoice='A';
+    S.lockSelectedChars=[];
+    render();
+  });
+  card.appendChild(optA);
+
+  // Option B
+  const optB = div('lock-option'+(S.lockChoice==='B'?' chosen':S.lockChoice==='A'?' dimmed':''));
+  optB.appendChild(mkEl('div','lock-option-letter', S.lockChoice==='B' ? '✓ Option B — selected' : 'Option B'));
+  optB.appendChild(mkEl('div','lock-option-title','100 free taps, one character'));
+  if(S.lockChoice!=='B'){
+    optB.appendChild(mkEl('div','lock-option-sub','All your free trial on a single storyline. More depth, fewer options.'));
+  }
+  optB.addEventListener('click',()=>{
+    if(S.lockChoice==='B') return;
+    S.lockChoice='B';
+    S.lockSelectedChars=[];
+    render();
+  });
+  card.appendChild(optB);
+
+  if(S.lockChoice){
+    const needCount = S.lockChoice==='A' ? 2 : 1;
+    const pickLabel = div('lock-sub');
+    pickLabel.style.marginTop='2px';
+    pickLabel.style.marginBottom='4px';
+    pickLabel.textContent = S.lockChoice==='A'
+      ? `Pick two characters (${S.lockSelectedChars.length}/2):`
+      : 'Pick one character:';
+    card.appendChild(pickLabel);
+
+    const grid = div('lock-char-grid');
+    CHARACTERS.forEach(ch=>{
+      const chip = div('lock-char-chip'+(S.lockSelectedChars.includes(ch.id)?' selected':''));
+      chip.appendChild(mkEl('div','lock-char-chip-emoji',ch.emoji));
+      chip.appendChild(mkEl('div','lock-char-chip-name',ch.name.split(' ')[0]));
+      chip.appendChild(mkEl('div','lock-char-chip-blurb',ch.blurb));
+      chip.addEventListener('click',()=>{
+        const idx=S.lockSelectedChars.indexOf(ch.id);
+        if(idx>-1){
+          S.lockSelectedChars.splice(idx,1);
+        } else {
+          if(S.lockSelectedChars.length>=needCount){
+            S.lockSelectedChars.shift();
+          }
+          S.lockSelectedChars.push(ch.id);
+        }
+        render();
+      });
+      grid.appendChild(chip);
+    });
+    card.appendChild(grid);
+
+    const warn = div('lock-warning');
+    warn.appendChild(mkEl('div','lock-warning-text','⚠ this choice is permanent — you cannot choose again'));
+    card.appendChild(warn);
+
+    const confirmBtn = mkEl('button','lock-confirm-btn'+(S.lockSelectedChars.length===needCount?' active':''),
+      S.lockChoice==='A' ? 'Lock in these two stories' : 'Lock in this story');
+    confirmBtn.addEventListener('click',()=>{
+      if(S.lockSelectedChars.length!==needCount) return;
+      S.pendingLockConfirm = true;
+      render();
+    });
+    card.appendChild(confirmBtn);
+
+    const back = mkEl('div','lock-back-link','← choose a different option');
+    back.addEventListener('click',()=>{S.lockChoice=null;S.lockSelectedChars=[];render();});
+    card.appendChild(back);
+  }
+
+  wrap.appendChild(card);
+  app.appendChild(wrap);
+
+  if(S.pendingLockConfirm){
+    const overlay = div('confirm-overlay');
+    const box = div('confirm-box');
+    box.appendChild(mkEl('div','confirm-icon','🔒'));
+    box.appendChild(mkEl('div','confirm-title','This can\'t be undone'));
+    const names = S.lockSelectedChars.map(id=>CHARACTERS.find(c=>c.id===id).name).join(' & ');
+    box.appendChild(mkEl('div','confirm-sub',
+      S.lockChoice==='A'
+        ? `You're locking in 50 free taps each with ${names}. You will not be able to pick different characters for your free trial later.`
+        : `You're locking in 100 free taps with ${names}. You will not be able to pick a different character for your free trial later.`
+    ));
+    const btns = div('confirm-btns');
+    const cancel = mkEl('button','confirm-btn-cancel','Wait, let me think');
+    cancel.addEventListener('click',()=>{S.pendingLockConfirm=false;render();});
+    const go = mkEl('button','confirm-btn-go','I\'m sure');
+    go.addEventListener('click',()=>{
+      S.unlockedChars = [...S.lockSelectedChars];
+      S.tapCap = S.lockChoice==='A' ? 100 : 100; // 50 each = 100 total taps pool; 100 for one char
+      S.taps = 0;
+      S.pendingLockConfirm = false;
+      saveOnboard();
+      saveTaps();
+      S.screen='home';
+      render();
+    });
+    btns.appendChild(cancel);btns.appendChild(go);
+    box.appendChild(btns);
+    overlay.appendChild(box);
+    app.appendChild(overlay);
+  }
+}
+
+// ── HOME (CARD GRID) ─────────────────────────────────────────────────────────
+function renderHome(){
+  const home = div('home');
+  const hdr = div('home-header');
+  const logo = div('logo');
+  logo.innerHTML='<span class="sit">situation</span><span class="ship">ship</span>';
+  hdr.appendChild(logo);
+  const badge = mkEl('div','home-tier-badge',tierLabel());
+  badge.addEventListener('click',()=>{S.screen='wall';render();});
+  hdr.appendChild(badge);
+  home.appendChild(hdr);
+
+  if(S.tier==='free'){
+    const resetRow = div('home-reset-row');
+    const resetLink = mkEl('div','home-reset-link','reset free trial (testing)');
+    resetLink.addEventListener('click',()=>{
+      localStorage.removeItem('sit_onboarded');
+      localStorage.removeItem('sit_unlocked_chars');
+      localStorage.removeItem('sit_taps');
+      localStorage.removeItem('sit_tap_cap');
+      S.unlockedChars=[];
+      S.taps=0; S.tapCap=0;
+      S.lockChoice=null; S.lockSelectedChars=[];
+      S.screen='lock';
+      render();
+    });
+    resetRow.appendChild(resetLink);
+    home.appendChild(resetRow);
+  }
+
+  if(S.tier!=='1499'){
+    const tapsBar = div('home-taps-bar');
+    tapsBar.appendChild(mkEl('div','home-taps-label','taps remaining'));
+    tapsBar.appendChild(mkEl('div','home-taps-num', String(Math.max(0,tapsLeft()))));
+    home.appendChild(tapsBar);
+  }
+
+  const grid = div('card-grid');
+  CHARACTERS.forEach(ch=>{
+    const unlocked = isCharUnlocked(ch.id);
+    const card = div('char-card'+(unlocked?'':' locked'));
+    const shade = div('char-card-shade');
+    card.appendChild(shade);
+    const emojiWrap = div('char-card-emoji-wrap');
+    emojiWrap.style.animationDelay = (Math.random()*3)+'s, '+(Math.random()*4)+'s';
+    const emoji = div('char-card-emoji');
+    emoji.textContent = ch.emoji;
+    emojiWrap.appendChild(emoji);
+    card.appendChild(emojiWrap);
+    if(unlocked && ch.online){
+      const dot = div('char-card-online');
+      card.appendChild(dot);
+    } else if(!unlocked){
+      const lock = div('char-card-lock');
+      lock.textContent='🔒';
+      card.appendChild(lock);
+    }
+    const name = mkEl('div','char-card-name',ch.name.split(' ')[0]);
+    const role = mkEl('div','char-card-role',ch.role);
+    const tag = mkEl('div','char-card-tag', unlocked ? ch.blurb : 'Locked — tap to unlock');
+    card.appendChild(name);card.appendChild(role);card.appendChild(tag);
+    card.addEventListener('click',()=>{
+      if(unlocked){
+        S.selectedChar = ch;
+        S.screen='scenes';
+        render();
+      } else {
+        S.screen='wall';
+        render();
+      }
+    });
+    grid.appendChild(card);
+  });
+  let lastBounce = 0;
+  grid.addEventListener('scroll', ()=>{
+    const atBottom = grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 4;
+    const atTop = grid.scrollTop <= 0;
+    const now2 = Date.now();
+    if((atBottom || atTop) && now2 - lastBounce > 500){
+      lastBounce = now2;
+      grid.classList.remove('bounce-end');
+      void grid.offsetWidth; // force reflow to restart animation
+      grid.classList.add('bounce-end');
+    }
+  });
+  home.appendChild(grid);
+  app.appendChild(home);
+}
+
+// ── SCENES ─────────────────────────────────────────────────────────────────
+function renderScenes(){
+  const ch = S.selectedChar;
+  const hdr = div('header');
+  const back = mkEl('button','back-btn','←');
+  back.addEventListener('click',()=>{S.screen='home';render();});
+  hdr.appendChild(back);
+  const av = div('char-avatar-init');
+  av.style.background=ch.gradient.replace('160deg','135deg');
+  av.textContent=ch.emoji;
+  hdr.appendChild(av);
+  const info = div('header-info');
+  info.appendChild(mkEl('div','header-name',ch.name));
+  info.appendChild(mkEl('div','header-status',ch.role));
+  hdr.appendChild(info);
+  if(S.tier!=='1499'){
+    const taps = mkEl('div','header-taps'+(tapsLeft()<=20?' low':''), tapsLeft()+' taps');
+    hdr.appendChild(taps);
+  }
+  app.appendChild(hdr);
+
+  const picker = div('scene-picker');
+  const list = div('scene-picker-list');
+  const shimmerPalette = ['rgba(74,158,255,0.4)','rgba(155,89,182,0.4)','rgba(255,107,157,0.4)','rgba(99,102,241,0.4)'];
+  RAW_SCENES[ch.id].forEach((sc,idx)=>{
+    const card = div('scene-card');
+    const letter = div('scene-card-letter');
+    letter.textContent = sc.letter;
+    letter.style.borderColor = ch.color+'55';
+    letter.style.color = ch.color;
+    const cardInfo = div('scene-card-info');
+    cardInfo.appendChild(mkEl('div','scene-card-title',sc.title));
+    cardInfo.appendChild(mkEl('div','scene-card-sub',sc.sub));
+    cardInfo.appendChild(mkEl('div','scene-card-meta','150+ messages'));
+    const arrow = div('scene-card-arrow');
+    arrow.textContent='›';
+    card.appendChild(letter);card.appendChild(cardInfo);card.appendChild(arrow);
+    // sequential shimmer sweep, one card after another, cycling the color palette
+    card.style.setProperty('--shimmer-color', shimmerPalette[idx % shimmerPalette.length]);
+    setTimeout(()=>{ card.classList.add('shimmer-in'); }, idx*450);
+    card.addEventListener('click',()=>{
+      if(S.tier!=='1499' && tapsLeft()<=0){ S.screen='wall'; render(); return; }
+      S.selectedSceneDef = sc;
+      S.compiledFlow = buildScene(ch.id, sc.beats, 150);
+      S.currentNodeIdx = 0;
+      S.displayedMsgs=[];
+      S.isAnimating=false;
+      S.currentChoices=null;
+      S.screen='chat';
+      render();
+      setTimeout(()=>advanceFlow(),400);
+    });
+    list.appendChild(card);
+  });
+  picker.appendChild(list);
+  app.appendChild(picker);
+
+  // rocket + trailing sad quote, scene-selection screen only
+  const rocketBar = div('rocket-trail-bar');
+  const rocketUnit = div('rocket-unit');
+  rocketUnit.appendChild(mkEl('span','rocket-emoji','🚀'));
+  rocketUnit.appendChild(mkEl('span','rocket-quote', rand(ROCKET_QUOTES)));
+  rocketBar.appendChild(rocketUnit);
+  app.appendChild(rocketBar);
+  // loop: when the flight finishes, restart with a fresh quote
+  rocketUnit.addEventListener('animationend', function loopRocket(){
+    if(!document.body.contains(rocketUnit)) return;
+    rocketUnit.querySelector('.rocket-quote').textContent = rand(ROCKET_QUOTES);
+    rocketUnit.style.animation = 'none';
+    void rocketUnit.offsetWidth;
+    rocketUnit.style.animation = '';
+  });
+}
+
+// ── CHAT ───────────────────────────────────────────────────────────────────
+function renderChat(){
+  const ch = S.selectedChar;
+  const sc = S.selectedSceneDef;
+  const hdr = div('header');
+  const back = mkEl('button','back-btn','←');
+  back.addEventListener('click',()=>{clearIdlePrompt();S.screen='scenes';render();});
+  hdr.appendChild(back);
+  const av = div('char-avatar-init');
+  av.style.background=ch.gradient.replace('160deg','135deg');
+  av.textContent=ch.emoji;
+  hdr.appendChild(av);
+  const info = div('header-info');
+  info.appendChild(mkEl('div','header-name',ch.name));
+  info.appendChild(mkEl('div','header-status', S.isAnimating?'typing...':'online'));
+  hdr.appendChild(info);
+  if(S.tier!=='1499'){
+    const taps = mkEl('div','header-taps'+(tapsLeft()<=20?' low':''), tapsLeft()+' taps');
+    hdr.appendChild(taps);
+  }
+  app.appendChild(hdr);
+
+  const banner = div('scene-banner');
+  banner.appendChild(mkEl('span','scene-banner-dot','◈'));
+  banner.appendChild(mkEl('span','scene-banner-text',sc.setup));
+  app.appendChild(banner);
+
+  const msgs = div('messages');
+  msgs.id='msgs';
+  S.displayedMsgs.forEach(m=>{
+    const isAction = m.text.startsWith('*')&&m.text.endsWith('*')&&m.text.length>2;
+    const row = div('msg-row '+(m.who==='player'?'right':'left'));
+    const bub = div('bubble '+(isAction?'action':m.who==='player'?'player':'them'));
+    bub.textContent=m.text;
+    if(!isAction){
+      const t=div('msg-time');
+      t.textContent=m.time+(m.who==='player'?' ✓✓':'');
+      bub.appendChild(t);
+    }
+    row.appendChild(bub);
+    msgs.appendChild(row);
+  });
+  if(S.isAnimating){
+    const row=div('msg-row left');
+    const bub=div('bubble them');
+    const dots=div('typing-bubble');
+    dots.appendChild(mkEl('span'));dots.appendChild(mkEl('span'));dots.appendChild(mkEl('span'));
+    bub.appendChild(dots);row.appendChild(bub);msgs.appendChild(row);
+  }
+  app.appendChild(msgs);
+  msgs.scrollTop=msgs.scrollHeight;
+
+  if(S.currentChoices && S.currentChoices.length>0 && !S.isAnimating){
+    const choicesDiv=div('choices');
+    const realChoices = S.currentChoices.filter(c=>!c.filler);
+    if(realChoices.length>0){
+      choicesDiv.appendChild(mkEl('div','choices-label','your reply'));
+    }
+    S.currentChoices.forEach(choice=>{
+      const btn=mkEl('button','choice-btn'+(choice.filler?' filler':''));
+      const text = mkEl('span','choice-btn-text', choice.label);
+      btn.appendChild(text);
+      btn.addEventListener('click',()=>{
+        if(S.isAnimating)return;
+        if(S.tier!=='1499' && tapsLeft()<=0){
+          S.currentChoices=null; S.screen='wall'; render(); return;
+        }
+        if(S.tier!=='1499'){
+          S.taps++;
+          saveTaps();
+        }
+        S.currentChoices=null;
+        clearIdlePrompt();
+        const sentText = choice.filler ? choice.label : maybeDecorateChoice(choice.label);
+        S.displayedMsgs.push({who:'player',text:sentText,time:now()});
+        render();scrollBottom();
+        const nextIdx = S.compiledFlow.findIndex(n=>n.id===choice.next);
+        S.currentNodeIdx = nextIdx>=0 ? nextIdx : S.currentNodeIdx+1;
+        setTimeout(()=>advanceFlow(),350);
+      });
+      choicesDiv.appendChild(btn);
+    });
+    app.appendChild(choicesDiv);
+    scheduleIdlePrompt();
+  }
+}
+
+// ── FLOW ENGINE ────────────────────────────────────────────────────────────
+function advanceFlow(){
+  const flow = S.compiledFlow;
+  if(S.currentNodeIdx>=flow.length) return;
+  const node = flow[S.currentNodeIdx];
+  if(!node) return;
+
+  if(node.ending){
+    playMsgs(node.who, node.msgs, ()=>{
+      S.screen='ending';
+      render();scrollBottom();
+    });
+    return;
+  }
+  if(node.choices){
+    S.currentChoices = node.choices;
+    render();scrollBottom();
+    return;
+  }
+  if(node.who && node.msgs){
+    playMsgs(node.who, node.msgs, ()=>{
+      S.currentNodeIdx++;
+      advanceFlow();
+    });
+    return;
+  }
+  S.currentNodeIdx++;
+  advanceFlow();
+}
+
+function playMsgs(who,msgs,cb){
+  S.isAnimating=true;
+  render();scrollBottom();
+  let i=0;
+  function next(){
+    if(i>=msgs.length){
+      S.isAnimating=false;
+      render();scrollBottom();
+      if(cb)cb();
+      return;
+    }
+    const msg=msgs[i];
+    const delay=i===0?500:Math.min(450+msg.length*14,1300);
+    setTimeout(()=>{
+      S.displayedMsgs.push({who,text:msg,time:now()});
+      i++;
+      if(i<msgs.length){render();scrollBottom();next();}
+      else next();
+    },delay);
+  }
+  next();
+}
+
+// ── WALL (PAYWALL) ──────────────────────────────────────────────────────────
+function renderWall(){
+  const ch = S.selectedChar;
+  const hdr = div('header');
+  const back = mkEl('button','back-btn','←');
+  back.addEventListener('click',()=>{S.screen= ch ? 'chat' : 'home';render();});
+  hdr.appendChild(back);
+  if(ch){
+    const av = div('char-avatar-init');
+    av.style.background=ch.gradient.replace('160deg','135deg');
+    av.textContent=ch.emoji;
+    hdr.appendChild(av);
+  }
+  const info = div('header-info');
+  info.appendChild(mkEl('div','header-name', ch ? ch.name : 'situationship'));
+  hdr.appendChild(info);
+  app.appendChild(hdr);
+
+  const wall = div('wall-screen');
+  wall.appendChild(mkEl('div','wall-emoji','🔒'));
+  wall.appendChild(mkEl('div','wall-title', tapsLeft()<=0 ? 'You\'ve used your free taps' : 'Unlock more of situationship'));
+  wall.appendChild(mkEl('div','wall-sub','Choose a tier below. Each unlock is permanent for the characters you select.'));
+
+  if(!S.showCodeEntry){
+    // Tier 1: $6.99
+    const t699 = mkEl('div','tier-card tier-699','');
+    t699.innerHTML = '<span class="tier-price">$6.99</span><div class="tier-name">500 messages</div><div class="tier-detail">Unlock 3 characters of your choice, 500 total taps across them</div>';
+    t699.addEventListener('click',()=>{ S.tierPicking='699'; S.tierCharSelection=[]; render(); });
+    wall.appendChild(t699);
+
+    // Tier 2: $9.99
+    const t999 = mkEl('div','tier-card tier-999','');
+    t999.innerHTML = '<span class="tier-price">$9.99</span><div class="tier-name">1000 messages</div><div class="tier-detail">Unlock all 5 characters, 1000 total taps across them</div>';
+    t999.addEventListener('click',()=>{ S.tierPicking='999'; S.tierCharSelection=CHARACTERS.map(c=>c.id); render(); });
+    wall.appendChild(t999);
+
+    // Tier 3: $14.99
+    const t1499 = mkEl('div','tier-card tier-1499','');
+    t1499.innerHTML = '<span class="tier-price">$14.99</span><div class="tier-name">Everything. Unlimited.</div><div class="tier-detail">All characters, all scenes, no tap limit. Ever.</div>';
+    t1499.addEventListener('click',()=>{ S.tierPicking='1499'; S.tierCharSelection=CHARACTERS.map(c=>c.id); render(); });
+    wall.appendChild(t1499);
+
+    // Character picker for tier (shown after picking a tier card, before going to Ko-fi)
+    if(S.tierPicking){
+      const need = S.tierPicking==='699' ? 3 : CHARACTERS.length;
+      const label = div('tier-char-picker');
+      label.textContent = S.tierPicking==='699'
+        ? `Choose 3 characters to unlock (${S.tierCharSelection.length}/3):`
+        : 'All characters included:';
+      wall.appendChild(label);
+      const grid = div('tier-char-grid');
+      CHARACTERS.forEach(c=>{
+        const chip = div('tier-char-chip'+(S.tierCharSelection.includes(c.id)?' selected':''));
+        chip.textContent = c.emoji+' '+c.name.split(' ')[0];
+        if(S.tierPicking==='699'){
+          chip.addEventListener('click',()=>{
+            const idx=S.tierCharSelection.indexOf(c.id);
+            if(idx>-1) S.tierCharSelection.splice(idx,1);
+            else { if(S.tierCharSelection.length>=3) S.tierCharSelection.shift(); S.tierCharSelection.push(c.id); }
+            render();
+          });
+        }
+        grid.appendChild(chip);
+      });
+      wall.appendChild(grid);
+
+      const goBtn = mkEl('a','wall-btn-'+'699','Continue to payment →');
+      goBtn.className = S.tierPicking==='699' ? 'tier-card tier-699' : S.tierPicking==='999' ? 'tier-card tier-999' : 'tier-card tier-1499';
+      goBtn.style.textAlign='center';
+      goBtn.style.opacity = (S.tierPicking!=='699' || S.tierCharSelection.length===3) ? '1' : '0.4';
+      goBtn.style.pointerEvents = (S.tierPicking!=='699' || S.tierCharSelection.length===3) ? 'auto' : 'none';
+      const url = S.tierPicking==='699' ? KOFI_699 : S.tierPicking==='999' ? KOFI_999 : KOFI_1499;
+      goBtn.href = url; goBtn.target='_blank';
+      wall.appendChild(goBtn);
+
+      const cancelPick = mkEl('button','ghost-btn','cancel');
+      cancelPick.addEventListener('click',()=>{S.tierPicking=null;S.tierCharSelection=[];render();});
+      wall.appendChild(cancelPick);
+    }
+
+    const codeBtn = mkEl('button','wall-code-btn','I already have a code →');
+    codeBtn.addEventListener('click',()=>{S.showCodeEntry=true;render();});
+    wall.appendChild(codeBtn);
+  } else {
+    wall.appendChild(mkEl('div','wall-title','Enter your code'));
+    wall.appendChild(mkEl('div','wall-sub','From your Ko-fi confirmation'));
+    const input = mkEl('input','code-input');
+    input.setAttribute('type','text');
+    input.setAttribute('placeholder','Paste your code here...');
+    wall.appendChild(input);
+    if(S.codeError) wall.appendChild(mkEl('div','err-text',S.codeError));
+    const unlockBtn = mkEl('button','unlock-btn','Unlock ✨');
+    unlockBtn.addEventListener('click',()=>{
+      const val = input.value.trim().toUpperCase().replace(/\s+/g,'');
+      const usedCodes = getUsedCodes();
+      if(usedCodes.has(val)){
+        S.codeError='This code has already been used on this device.';
+        render();
+        return;
+      }
+      if(CODES_699.has(val)){ markCodeUsed(val); applyTier('699', S.tierCharSelection.length===3?S.tierCharSelection:[]); }
+      else if(CODES_999.has(val)){ markCodeUsed(val); applyTier('999', CHARACTERS.map(c=>c.id)); }
+      else if(CODES_1499.has(val)){ markCodeUsed(val); applyTier('1499', CHARACTERS.map(c=>c.id)); }
+      else { S.codeError='Invalid code. Check for typos.'; render(); }
+    });
+    wall.appendChild(unlockBtn);
+    const back2 = mkEl('button','ghost-btn','← back');
+    back2.addEventListener('click',()=>{S.showCodeEntry=false;S.codeError='';render();});
+    wall.appendChild(back2);
+  }
+
+  app.appendChild(wall);
+}
+
+// ── PER-DEVICE CODE LOCK ─────────────────────────────────────────────────────
+// This is a static file with no backend, so true one-time-use enforcement
+// across all devices isn't possible. What this DOES do: once a code is
+// redeemed on a given browser/device, that same code is remembered as "used"
+// here (localStorage) and will be rejected if entered again on this device —
+// e.g. after a "reset free trial" or clearing app state to try to re-claim it.
+// It does NOT stop a leaked code from working on a different device/browser.
+function getUsedCodes(){
+  try{
+    return new Set(JSON.parse(localStorage.getItem('sit_used_codes')||'[]'));
+  } catch(e){ return new Set(); }
+}
+function markCodeUsed(code){
+  const used = getUsedCodes();
+  used.add(code);
+  localStorage.setItem('sit_used_codes', JSON.stringify(Array.from(used)));
+}
+
+function applyTier(tier, chars){
+  S.tier = tier;
+  if(tier==='699'){
+    S.unlockedChars = Array.from(new Set([...S.unlockedChars, ...chars]));
+    S.taps = 0; S.tapCap = 500;
+  } else if(tier==='999'){
+    S.unlockedChars = chars;
+    S.taps = 0; S.tapCap = 1000;
+  } else if(tier==='1499'){
+    S.unlockedChars = chars;
+  }
+  saveTier();
+  saveTaps();
+  localStorage.setItem('sit_tap_cap', S.tapCap||0);
+  S.showCodeEntry=false;
+  S.codeError='';
+  S.tierPicking=null;
+  S.screen='home';
+  render();
+}
+
+// ── ENDING ─────────────────────────────────────────────────────────────────
+function renderEnding(){
+  const ch = S.selectedChar;
+  const hdr=div('header');
+  const back=mkEl('button','back-btn','←');
+  back.addEventListener('click',()=>{clearIdlePrompt();S.screen='scenes';render();});
+  hdr.appendChild(back);
+  const av=div('char-avatar-init');
+  av.style.background=ch.gradient.replace('160deg','135deg');
+  av.textContent=ch.emoji;
+  hdr.appendChild(av);
+  const info=div('header-info');
+  info.appendChild(mkEl('div','header-name',ch.name));
+  info.appendChild(mkEl('div','header-status','online'));
+  hdr.appendChild(info);
+  app.appendChild(hdr);
+
+  const msgs=div('messages');
+  S.displayedMsgs.forEach(m=>{
+    const isAction=m.text.startsWith('*')&&m.text.endsWith('*')&&m.text.length>2;
+    const row=div('msg-row '+(m.who==='player'?'right':'left'));
+    const bub=div('bubble '+(isAction?'action':m.who==='player'?'player':'them'));
+    bub.textContent=m.text;
+    if(!isAction){const t=div('msg-time');t.textContent=m.time+(m.who==='player'?' ✓✓':'');bub.appendChild(t);}
+    row.appendChild(bub);msgs.appendChild(row);
+  });
+  app.appendChild(msgs);msgs.scrollTop=msgs.scrollHeight;
+
+  const e=div('ending-screen');
+  e.style.flex='0';e.style.padding='20px 24px 32px';
+  e.appendChild(mkEl('div','ending-title','That\'s where it ends. For now.'));
+  e.appendChild(mkEl('div','ending-sub','Replay it differently, or try another scene.'));
+  const btn=mkEl('button','ending-btn','← Back to scenes');
+  btn.addEventListener('click',()=>{clearIdlePrompt();S.screen='scenes';render();});
+  e.appendChild(btn);
+  app.appendChild(e);
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function div(cls){const d=document.createElement('div');if(cls)d.className=cls;return d;}
+function mkEl(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+function scrollBottom(){const m=document.getElementById('msgs');if(m)setTimeout(()=>m.scrollTop=m.scrollHeight,50);}
+
+// ── IDLE "TAP TO CONTINUE" PROMPT ───────────────────────────────────────────
+// If the player hasn't tapped a choice within 5 seconds, a gentle floating
+// pill rises from the bottom as a nudge. Tapping it just calls attention back
+// to the real choices (it does not itself advance the story) — it dismisses
+// itself the moment any choice is tapped.
+let idleTimer = null;
+function clearIdlePrompt(){
+  if(idleTimer){ clearTimeout(idleTimer); idleTimer=null; }
+  const el = document.getElementById('idle-prompt');
+  if(el) el.remove();
+}
+function scheduleIdlePrompt(){
+  clearIdlePrompt();
+  idleTimer = setTimeout(()=>{
+    if(!S.currentChoices || S.isAnimating) return;
+    if(document.getElementById('idle-prompt')) return;
+    const choicesEl = document.querySelector('.choices');
+    const h = choicesEl ? choicesEl.getBoundingClientRect().height : 220;
+    document.documentElement.style.setProperty('--choices-h', h+'px');
+    const prompt = document.createElement('div');
+    prompt.id = 'idle-prompt';
+    prompt.className = 'idle-prompt';
+    prompt.textContent = '✨ tap to continue';
+    prompt.addEventListener('click', ()=>{
+      const firstBtn = document.querySelector('.choice-btn:not(.filler)') || document.querySelector('.choice-btn');
+      if(firstBtn) firstBtn.scrollIntoView({behavior:'smooth', block:'center'});
+      clearIdlePrompt();
+      scheduleIdlePrompt();
+    });
+    document.body.appendChild(prompt);
+  }, 5000);
+}
+function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+
+render();
+</script>
+</body>
+</html>
